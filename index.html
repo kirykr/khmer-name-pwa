@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ស្វែងរកឈ្មោះខ្មែរ</title>
+<meta name="application-name" content="ឈ្មោះខ្មែរ">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ឈ្មោះខ្មែរ">
+<meta name="description" content="Khmer astrological name finder — ដំរាដាក់ជ្មួរ">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#4a3728">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#faf8f3;color:#2d2a1e;min-height:100vh}
+.app{max-width:1180px;margin:0 auto;padding:20px 16px}
+h1{font-family:'Noto Sans Khmer',sans-serif;font-size:22px;font-weight:600;text-align:center;color:#4a3728;margin-bottom:4px}
+.subtitle{text-align:center;font-size:13px;color:#888;margin-bottom:20px}
+.main-grid{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
+@media(max-width:720px){.main-grid{grid-template-columns:1fr}}
+
+/* Wheel panel */
+.wheel-panel{background:#fff;border-radius:16px;border:0.5px solid #e0ddd5;padding:16px;text-align:center;position:sticky;top:16px}
+.wpanel-title{font-family:'Noto Sans Khmer',sans-serif;font-size:13px;color:#5a4530;margin-bottom:10px}
+#wheel-wrap{position:relative;width:268px;height:268px;margin:0 auto 10px}
+#cv{position:absolute;top:0;left:0;cursor:grab}
+#cv.dragging{cursor:grabbing}
+#svg-ol{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
+.wheel-hint{font-size:11px;color:#aaa;margin-bottom:8px}
+.day-buttons{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:10px}
+.day-btn{padding:3px 9px;border:0.5px solid #d0ccc0;border-radius:20px;background:#faf8f3;color:#5a4530;cursor:pointer;font-size:11px;font-family:'Noto Sans Khmer',sans-serif;transition:all .12s}
+.day-btn:hover{background:#f0ebe0}
+.day-btn.active{background:#4a3728;color:#fff;border-color:#4a3728}
+.confirm-btn{width:100%;padding:9px;background:#4a7c59;color:#fff;border:none;border-radius:10px;font-size:13px;font-family:'Noto Sans Khmer',sans-serif;cursor:pointer;margin-bottom:8px;transition:background .2s}
+.confirm-btn:hover{background:#3d6649}
+.fortune-summary{padding:8px 10px;background:#faf8f3;border-radius:8px;display:none;text-align:left;margin-top:2px}
+.fortune-summary.show{display:block}
+.fday-label{font-weight:600;font-family:'Noto Sans Khmer',sans-serif;font-size:12px;margin-bottom:5px;color:#4a3728}
+.frow{display:flex;align-items:flex-start;gap:5px;margin-bottom:3px;font-family:'Noto Sans Khmer',sans-serif;font-size:10.5px}
+.fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.d-good{background:#4a7c59}.d-bad{background:#c0392b}.d-neutral{background:#bbb}
+
+/* Results panel */
+.results-panel{background:#fff;border-radius:16px;border:0.5px solid #e0ddd5;padding:20px}
+.results-title{font-family:'Noto Sans Khmer',sans-serif;font-size:15px;color:#4a3728;margin-bottom:3px}
+.results-hint{font-size:11px;color:#aaa;margin-bottom:12px}
+
+/* Letter tabs */
+.letter-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
+.ltab{padding:5px 11px;border:0.5px solid #d5d0c5;border-radius:20px;background:#faf8f3;color:#4a3728;cursor:pointer;font-size:13px;font-family:'Noto Sans Khmer',sans-serif;transition:all .12s;text-align:center;line-height:1.2}
+.ltab:hover{background:#ede8dc}
+.ltab.active{background:#4a3728;color:#fff;border-color:#4a3728}
+.ltab.blocked{color:#c0392b;border-color:#f0b8b4;background:#fff5f5;opacity:.55;cursor:not-allowed;text-decoration:line-through}
+.ltab.sunday-ok{color:#b94020;border-color:#f0b8b4;background:#fff5f5}
+.ltab.sunday-ok.active{background:#b94020;color:#fff;border-color:#b94020}
+.tab-zone{font-size:8.5px;display:block;opacity:.7;font-family:'Inter',sans-serif;margin-top:1px;font-weight:400}
+
+/* Name list — compact rows */
+.names-list{display:flex;flex-direction:column;border:0.5px solid #e8e4da;border-radius:10px;overflow:hidden;margin-bottom:20px;max-height:420px;overflow-y:auto}
+.name-row{display:flex;align-items:center;padding:7px 12px;background:#fff;cursor:pointer;transition:background .1s;border-bottom:0.5px solid #f0ece4;position:relative;gap:6px}
+.name-row:last-child{border-bottom:none}
+.name-row:hover{background:#f5f2e8}
+.name-row:hover .nr-tip-icon{opacity:1}
+.name-row.selected{background:#e8f4ed}
+.nr-kh{font-family:'Noto Sans Khmer',sans-serif;font-size:15px;font-weight:500;color:#1a1812;min-width:110px;flex-shrink:0}
+.nr-en{font-size:11.5px;color:#999;flex-shrink:0}
+.nr-read{font-family:'Noto Sans Khmer',sans-serif;font-size:11px;color:#b0a890;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nr-tip-icon{font-size:12px;color:#bbb;opacity:0;transition:opacity .1s;flex-shrink:0;margin-left:2px;cursor:help}
+.nr-sel{width:20px;height:20px;border-radius:50%;border:1.5px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .1s;margin-left:4px}
+.name-row.selected .nr-sel{background:#4a7c59;border-color:#4a7c59;color:#fff}
+
+/* Tooltip via CSS */
+.name-row[data-tip]:hover::after{
+  content:attr(data-tip);
+  position:absolute;left:8px;top:calc(100% + 5px);z-index:200;
+  background:#2d2a1e;color:#f0ece0;
+  font-size:11px;font-family:'Noto Sans Khmer',sans-serif;
+  padding:6px 10px;border-radius:7px;
+  white-space:pre-wrap;max-width:300px;line-height:1.6;
+  pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,.25);
+}
+.name-row[data-tip]:hover::before{
+  content:'';position:absolute;left:18px;top:calc(100%);z-index:200;
+  border:5px solid transparent;border-bottom-color:#2d2a1e;pointer-events:none;
+}
+
+.empty-state{text-align:center;padding:40px 20px;color:#ccc;font-size:13px}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.blocked-notice{background:#fff5f5;border:0.5px solid #f0b8b4;border-radius:8px;padding:8px 12px;font-family:'Noto Sans Khmer',sans-serif;font-size:11px;color:#c0392b;margin-bottom:10px;line-height:1.6;display:none}
+.blocked-notice.show{display:block}
+
+/* Combiner */
+.combiner{background:#f5f2ea;border-radius:12px;padding:14px;margin-top:4px}
+.combiner-title{font-family:'Noto Sans Khmer',sans-serif;font-size:13px;color:#4a3728;margin-bottom:10px;font-weight:500}
+.sel-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:30px;margin-bottom:10px}
+.chip{display:flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #c8c0b0;border-radius:20px;font-family:'Noto Sans Khmer',sans-serif;font-size:13px}
+.chip-rm{cursor:pointer;color:#bbb;font-size:13px;line-height:1}
+.chip-rm:hover{color:#c0392b}
+.result-box{display:flex;align-items:baseline;gap:12px;padding:12px 16px;background:#fff;border-radius:10px;border:0.5px solid #d5d0c5;flex-wrap:wrap}
+.res-kh{font-family:'Noto Sans Khmer',sans-serif;font-size:26px;font-weight:600;color:#1a1812;letter-spacing:1px}
+.res-en{font-size:14px;color:#999}
+.comb-actions{display:flex;gap:7px;margin-top:10px}
+.act-btn{padding:6px 13px;border:0.5px solid #c8c0b0;border-radius:8px;background:#fff;color:#4a3728;cursor:pointer;font-size:12px;transition:background .12s}
+.act-btn:hover{background:#ede8dc}
+.act-btn.primary{background:#4a7c59;color:#fff;border-color:#4a7c59}
+.act-btn.primary:hover{background:#3d6649}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>ស្វែងរកឈ្មោះ</h1>
+  
+<div id="pwa-bar" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+  <button id="install-btn" style="display:none;align-items:center;gap:7px;padding:7px 16px;background:#4a3728;color:#fff;border:none;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Sans Khmer',sans-serif">
+    <span style="font-size:16px">📲</span>
+    <span>ដំឡើងកម្មវិធី · Install App</span>
+  </button>
+  <div id="offline-badge" style="display:none;align-items:center;gap:5px;padding:4px 12px;background:#fff3cd;border:0.5px solid #f0c040;border-radius:20px;font-size:11px;color:#7a5c00">
+    <span>📴</span><span>Offline mode</span>
+  </div>
+</div>
+  <p class="subtitle">Khmer Astrological Name Finder · ដំរាដាក់ជ្មួរ</p>
+  <div class="main-grid">
+
+    <!-- LEFT: Wheel -->
+    <div class="wheel-panel">
+      <p class="wpanel-title">ជ្រើសថ្ងៃកំណើត<br><span style="font-size:10px;color:#aaa;font-weight:400">Rotate birth day to 12 o'clock · confirm</span></p>
+      <div id="wheel-wrap">
+        <canvas id="cv" width="268" height="268"></canvas>
+        <svg id="svg-ol" width="268" height="268" xmlns="http://www.w3.org/2000/svg">
+          <defs id="sv-defs"></defs>
+          <g id="sv-layer"></g>
+        </svg>
+      </div>
+      <p class="wheel-hint">Drag rings or tap a shortcut</p>
+      <div class="day-buttons" id="day-btns"></div>
+      <button class="confirm-btn" id="confirm-btn">បង្ហាញឈ្មោះ · Show Names</button>
+      <div class="fortune-summary" id="fortune-summary"></div>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="results-panel">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🌀</div>
+        <div>Rotate Ring 2 so the birth day is at the <strong>top (12 o'clock)</strong>, then press <strong>Show Names</strong></div>
+      </div>
+      <div id="name-results" style="display:none">
+        <h2 class="results-title" id="results-title"></h2>
+        <p class="results-hint">Hover a name to see its meaning · click to add to combiner</p>
+        <div class="blocked-notice" id="blocked-notice"></div>
+        <div class="letter-tabs" id="letter-tabs"></div>
+        <div class="names-list" id="names-list"></div>
+        <div class="combiner">
+          <div class="combiner-title">ផ្សំឈ្មោះ · Name Combiner</div>
+          <div class="sel-chips" id="sel-chips"></div>
+          <div class="result-box">
+            <span class="res-kh" id="res-kh">—</span>
+            <span class="res-en" id="res-en"></span>
+          </div>
+          <div class="comb-actions">
+            <button class="act-btn" id="clear-btn">Clear</button>
+            <button class="act-btn" id="swap-btn">↕ Swap</button>
+            <button class="act-btn primary" id="copy-btn">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function updateOnlineStatus(){
+  const badge = document.getElementById('offline-badge');
+  if(badge) badge.style.display = navigator.onLine ? 'none' : 'flex';
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+</script>
+<script>
+// ═══════════════════════════════════════════
+// WHEEL ENGINE
+// ═══════════════════════════════════════════
+const W=268,CX=134,CY=134;
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+const NS='http://www.w3.org/2000/svg';
+const svgDefs=document.getElementById('sv-defs');
+const svgLayer=document.getElementById('sv-layer');
+const BG='#f5f0e8',STROKE='rgba(80,70,50,0.35)',TC='#3a3020';
+const SEP='rgba(80,70,50,0.18)',CF='rgba(200,180,140,0.30)';
+
+// Ring 0 = fixed (fortune zones). Rings 1-4 rotate together.
+// Fortune zones clockwise from top: 0=បរិវារ 1=អាយុ 2=តេជៈ 3=សិរី 4=មូលៈ 5=ឧស្សាហ៍ 6=មន្ត្រី 7=កាឡកិណី
+const RINGS=[
+  {r0:22,r1:44,div:8,texts:['បរិវារ','អាយុ','តេជៈ','សិរី','មូលៈ','ឧស្សាហ៍','មន្ត្រី','កាឡកិណី']},
+  {r0:44,r1:69,div:8,texts:['ចន្ទ ២','អង្គារ ៣','ពុធ ៤\n(ថ្ងៃ)','សៅរ៍ ៧','ព្រហ ៥','រាហូ ៨\n(ពុធ យប់)','សុក្រ ៦','អាទិត្យ ១']},
+  {r0:69,r1:92,div:8,texts:['ព្យ័គ្ឃ','សិង្ហ','សោណា','នាគ','មុសិក','គជ','អជ','គ្រុឌ']},
+  {r0:92,r1:112,div:8,texts:['ក ខ គ ឃ ង','ច ឆ ជ ឈ ញ','ដ ឋ ឌ ឍ ណ','ត ថ ទ ធ ន','ប ផ ព ភ ម','យ រ ល វ','ស ហ ឡ','អ អា អិ']},
+  {r0:112,r1:128,div:8,texts:['បូព៌ា','អគ្នេយ៍','ទក្សិណ','និរតី','បច្ចឹម','ពាយ័ព្យ','ឧត្តរ','ឦសាន']},
+];
+const N=8,CA=(Math.PI*2)/N,SNAP_T=(Math.PI/180)*10;
+let outerRot=0,snapAnim=false,snapFrom=0,snapTo=0,snapT0=0;
+const SNAP_DUR=180;
+let flashA=0,flashId=null;
+
+function nSnap(r){return Math.round(r/CA)*CA}
+function dSnap(r){return Math.abs(r-nSnap(r))}
+function doSnap(f,t){snapAnim=true;snapFrom=f;snapTo=t;snapT0=performance.now();requestAnimationFrame(sStep)}
+function sStep(now){
+  const t=Math.min((now-snapT0)/SNAP_DUR,1);
+  outerRot=snapFrom+(snapTo-snapFrom)*(1-Math.pow(1-t,3));
+  render();
+  if(t<1)requestAnimationFrame(sStep);
+  else{outerRot=snapTo;snapAnim=false;doFlash();render()}
+}
+function doFlash(){flashA=1;if(flashId)cancelAnimationFrame(flashId);fFlash()}
+function fFlash(){flashA-=0.06;if(flashA>0){render();flashId=requestAnimationFrame(fFlash)}else{flashA=0;render()}}
+
+function arcPath(id,r,sa,ea,cw){
+  let el=document.getElementById(id);
+  if(!el){el=document.createElementNS(NS,'path');el.setAttribute('id',id);svgDefs.appendChild(el)}
+  const x1=CX+r*Math.cos(sa),y1=CY+r*Math.sin(sa),x2=CX+r*Math.cos(ea),y2=CY+r*Math.sin(ea);
+  el.setAttribute('d','M'+x1+' '+y1+' A'+r+' '+r+' 0 0 '+(cw?1:0)+' '+x2+' '+y2);
+  return id;
+}
+function updateSVG(){
+  while(svgLayer.firstChild)svgLayer.removeChild(svgLayer.firstChild);
+  while(svgDefs.firstChild)svgDefs.removeChild(svgDefs.firstChild);
+  for(let ri=0;ri<RINGS.length;ri++){
+    const{r0,r1,div,texts}=RINGS[ri];
+    const rot=ri===0?0:outerRot,aStep=CA,rH=r1-r0;
+    for(let i=0;i<div;i++){
+      const sa=rot+i*aStep-Math.PI/2-aStep/2,ea=sa+aStep,mid=(sa+ea)/2;
+      const lns=(texts[i]||'').split('\n').map(l=>l.trim()).filter(l=>l);
+      if(!lns.length)continue;
+      const isBot=Math.sin(mid)>0;
+      const fs=rH>40?9:rH>30?8:7;
+      const lG=fs+2,totH=lns.length*lG,rSt=(r0+r1)/2-totH/2+lG/2;
+      lns.forEach((line,li)=>{
+        const r=rSt+li*lG,pid='a'+ri+'-'+i+'-'+li;
+        arcPath(pid,r,isBot?ea:sa,isBot?sa:ea,!isBot);
+        const tEl=document.createElementNS(NS,'text');
+        tEl.setAttribute('font-family',"'Noto Sans Khmer',sans-serif");
+        tEl.setAttribute('font-size',fs+'px');
+        tEl.setAttribute('fill',TC);
+        const tp=document.createElementNS(NS,'textPath');
+        tp.setAttribute('href','#'+pid);
+        tp.setAttribute('startOffset','50%');
+        tp.setAttribute('text-anchor','middle');
+        tp.setAttribute('dominant-baseline','middle');
+        tp.textContent=line;
+        tEl.appendChild(tp);svgLayer.appendChild(tEl);
+      });
+    }
+  }
+  const ct=document.createElementNS(NS,'text');
+  ct.setAttribute('x',CX);ct.setAttribute('y',CY);
+  ct.setAttribute('text-anchor','middle');ct.setAttribute('dominant-baseline','middle');
+  ct.setAttribute('font-family',"'Noto Sans Khmer',sans-serif");
+  ct.setAttribute('font-size','6px');ct.setAttribute('fill',TC);
+  ct.textContent='តម្រា';svgLayer.appendChild(ct);
+}
+function drawCanvas(){
+  ctx.clearRect(0,0,W,W);ctx.fillStyle=BG;ctx.fillRect(0,0,W,W);
+  const CR=20;
+  ctx.beginPath();ctx.arc(CX,CY,CR,0,Math.PI*2);ctx.fillStyle=CF;ctx.fill();
+  ctx.strokeStyle=STROKE;ctx.lineWidth=0.6;ctx.stroke();
+  const prox=dSnap(outerRot),isSnap=prox<0.001,glow=Math.max(0,1-prox/SNAP_T);
+  if(glow>0&&!isSnap){ctx.save();ctx.beginPath();ctx.arc(CX,CY,RINGS[0].r1,0,Math.PI*2);ctx.strokeStyle='rgba(80,180,120,'+glow*0.6+')';ctx.lineWidth=2*glow;ctx.stroke();ctx.restore()}
+  if(flashA>0){ctx.save();ctx.beginPath();ctx.arc(CX,CY,RINGS[RINGS.length-1].r1,0,Math.PI*2);ctx.strokeStyle='rgba(60,200,120,'+flashA*0.5+')';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.arc(CX,CY,RINGS[0].r1,0,Math.PI*2);ctx.strokeStyle='rgba(60,200,120,'+flashA*0.8+')';ctx.lineWidth=2;ctx.stroke();ctx.restore()}
+  for(let ri=0;ri<RINGS.length;ri++){
+    const{r0,r1,div}=RINGS[ri],rot=ri===0?0:outerRot,aStep=(Math.PI*2)/div,isFix=ri===0;
+    for(let i=0;i<div;i++){
+      const sa=rot+i*aStep-Math.PI/2-aStep/2,ea=sa+aStep;
+      ctx.beginPath();ctx.arc(CX,CY,r1,sa,ea);ctx.arc(CX,CY,r0,ea,sa,true);ctx.closePath();
+      ctx.fillStyle=isFix?(i%2===0?'rgba(0,0,0,0.04)':'transparent'):'rgba(0,0,0,0.02)';ctx.fill();
+      ctx.beginPath();ctx.arc(CX,CY,r1,sa,ea);ctx.arc(CX,CY,r0,ea,sa,true);ctx.closePath();
+      ctx.strokeStyle=SEP;ctx.lineWidth=0.4;ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(CX,CY,r1,0,Math.PI*2);ctx.strokeStyle=STROKE;ctx.lineWidth=0.6;ctx.stroke();
+  }
+  ctx.beginPath();ctx.arc(CX,CY,RINGS[0].r0,0,Math.PI*2);ctx.strokeStyle=STROKE;ctx.lineWidth=0.6;ctx.stroke();
+  ctx.save();ctx.setLineDash([1,3]);ctx.strokeStyle='rgba(80,70,50,0.15)';ctx.lineWidth=0.4;
+  for(let i=0;i<N;i++){const a=i*CA-Math.PI/2;ctx.beginPath();ctx.moveTo(CX+RINGS[0].r0*Math.cos(a),CY+RINGS[0].r0*Math.sin(a));ctx.lineTo(CX+RINGS[0].r1*Math.cos(a),CY+RINGS[0].r1*Math.sin(a));ctx.stroke()}
+  ctx.setLineDash([]);ctx.restore();
+  if(isSnap){ctx.save();ctx.strokeStyle='rgba(20,140,70,0.45)';ctx.lineWidth=0.7;for(let i=0;i<N;i++){const a=outerRot+i*CA-Math.PI/2;ctx.beginPath();ctx.moveTo(CX+CR*Math.cos(a),CY+CR*Math.sin(a));ctx.lineTo(CX+RINGS[RINGS.length-1].r1*Math.cos(a),CY+RINGS[RINGS.length-1].r1*Math.sin(a));ctx.stroke()}ctx.restore()}
+}
+function render(){drawCanvas();updateSVG()}
+
+function gAngle(ex,ey){return Math.atan2(ey-CY,ex-CX)}
+function gRing(ex,ey){const r=Math.hypot(ex-CX,ey-CY);for(let i=0;i<RINGS.length;i++)if(r>=RINGS[i].r0&&r<=RINGS[i].r1)return i;return -1}
+let drag=false,dS=0,dSR=0;
+function sDrag(ex,ey){if(snapAnim)return;if(gRing(ex,ey)<=0)return;drag=true;dS=gAngle(ex,ey);dSR=outerRot;cv.classList.add('dragging')}
+function mDrag(ex,ey){if(!drag||snapAnim)return;const nr=dSR+(gAngle(ex,ey)-dS),sn=nSnap(nr),d=Math.abs(nr-sn);outerRot=d<SNAP_T?nr+(sn-nr)*(1-d/SNAP_T)*0.55:nr;render()}
+function eDrag(){if(!drag)return;drag=false;cv.classList.remove('dragging');if(dSnap(outerRot)<SNAP_T)doSnap(outerRot,nSnap(outerRot))}
+const GR=()=>cv.getBoundingClientRect();
+cv.addEventListener('mousedown',e=>{const r=GR();sDrag((e.clientX-r.left)*(W/r.width),(e.clientY-r.top)*(W/r.height))});
+window.addEventListener('mousemove',e=>{const r=GR();mDrag((e.clientX-r.left)*(W/r.width),(e.clientY-r.top)*(W/r.height))});
+window.addEventListener('mouseup',eDrag);
+cv.addEventListener('touchstart',e=>{const t=e.touches[0],r=GR();sDrag((t.clientX-r.left)*(W/r.width),(t.clientY-r.top)*(W/r.height));e.preventDefault()},{passive:false});
+window.addEventListener('touchmove',e=>{const t=e.touches[0],r=GR();mDrag((t.clientX-r.left)*(W/r.width),(t.clientY-r.top)*(W/r.height));e.preventDefault()},{passive:false});
+window.addEventListener('touchend',eDrag);
+
+// ═══════════════════════════════════════════
+// DAY SHORTCUT BUTTONS
+// Ring2 index order: 0=ចន្ទ 1=អង្គារ 2=ពុធ(day) 3=សៅរ៍ 4=ព្រហ 5=រាហូ 6=សុក្រ 7=អាទិត្យ
+// To bring idx i to top: outerRot = -i * CA
+// ═══════════════════════════════════════════
+const DAYS=[
+  {kh:'ចន្ទ',en:'Monday',idx:0},
+  {kh:'អង្គារ',en:'Tuesday',idx:1},
+  {kh:'ពុធ(ថ្ងៃ)',en:'Wed day',idx:2},
+  {kh:'ព្រហ',en:'Thursday',idx:4},
+  {kh:'សុក្រ',en:'Friday',idx:6},
+  {kh:'សៅរ៍',en:'Saturday',idx:3},
+  {kh:'អាទិត្យ',en:'Sunday',idx:7},
+  {kh:'រាហូ',en:'Wed night',idx:5},
+];
+const dayBtns=document.getElementById('day-btns');
+DAYS.forEach(d=>{
+  const b=document.createElement('button');
+  b.className='day-btn';b.textContent=d.kh;b.title=d.en;
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.day-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    doSnap(outerRot,nSnap(-d.idx*CA));
+  });
+  dayBtns.appendChild(b);
+});
+
+// ═══════════════════════════════════════════
+// FORTUNE ZONE & LETTER GROUP LOGIC
+//
+// KEY RULE from the book:
+//   When birth day is rotated to the TOP (12 o'clock = fortune zone pos 0),
+//   the cell ONE STEP COUNTER-CLOCKWISE (to the LEFT of the day) aligns with
+//   fortune zone 7 = កាឡកិណី. That letter group is BLOCKED.
+//
+//   Mathematically: blocked letter group index = (dayIdx - 1 + N) % N
+//   where dayIdx is the Ring2 index of the birth day at the top.
+//
+//   EXCEPTION: Sunday (dayIdx=7) — no restriction.
+// ═══════════════════════════════════════════
+
+const ZONE_NAMES=['បរិវារ','អាយុ','តេជៈ','សិរី','មូលៈ','ឧស្សាហ៍','មន្ត្រី','កាឡកិណី'];
+const ZONE_TYPE =['neutral','good','good','good','good','neutral','neutral','bad'];
+
+// Letter groups for Ring4, index 0..7 (same positional order as fortune zones at outerRot=0)
+const LG=[
+  {key:'ក',letters:['ក','ខ','គ','ឃ','ង'],label:'ក ខ គ ឃ ង'},
+  {key:'ច',letters:['ច','ឆ','ជ','ឈ','ញ'],label:'ច ឆ ជ ឈ ញ'},
+  {key:'ដ',letters:['ដ','ឋ','ឌ','ឍ','ណ'],label:'ដ ឋ ឌ ឍ ណ'},
+  {key:'ត',letters:['ត','ថ','ទ','ធ','ន'],label:'ត ថ ទ ធ ន'},
+  {key:'ប',letters:['ប','ផ','ព','ភ','ម'],label:'ប ផ ព ភ ម'},
+  {key:'យ',letters:['យ','រ','ល','វ'],label:'យ រ ល វ'},
+  {key:'ស',letters:['ស','ហ','ឡ'],label:'ស ហ ឡ'},
+  {key:'អ',letters:['អ','អា','អិ','អី','អុ','អូ','អេ','អោ'],label:'អ / vowel bases'},
+];
+
+// ═══════════════════════════════════════════
+// NAME DATABASE
+// {kh, en, read, meaning}
+// ═══════════════════════════════════════════
+const NAMES={
+  'ក':[
+      {kh:'កក្ដហ្ដា',en:'KAKAHDA',read:'កក-ដ-ហ្ដា',meaning:'ម្ចាស់ / master; one who holds firmly; firm leader'},
+      {kh:'កាំង',en:'KANG',read:'កាំ-ង',meaning:'កម្លាំង ពន្លឺ / strength and brightness; strong light'},
+      {kh:'កន្ធា',en:'KANHNA',read:'កន-ធា',meaning:'ណាសីស្រី / beautiful girl; lovely niece'},
+      {kh:'កនិការ',en:'KANIKAR',read:'ករ-និ-ការ',meaning:'ផ្កាស្រី / a type of flowering tree; floral beauty'},
+      {kh:'កន្ឌ',en:'KAND',read:'កន-ឌ',meaning:'ត្រឹម / correct; proper; appropriate'},
+      {kh:'កតិកា',en:'KATIKA',read:'ករ-តិ-កា',meaning:'ព្រម / agreement; promise; covenant'},
+      {kh:'កត្តា',en:'KATTA',read:'ករ-ត-តា',meaning:'អ្នកបង្កើត / creator; maker; doer'},
+      {kh:'កត្ដឹក',en:'KATDOEUK',read:'ករ-ត-ឌើក',meaning:'ថ្ពល់ / amber; precious resin stone'},
+      {kh:'កន',en:'KOAN',read:'ករ-អ',meaning:'កូន / child; offspring; precious one'},
+      {kh:'កនិថា',en:'KANITHA',read:'ករ-និ-ថា',meaning:'ប្អូនស្រី / younger sister; niece'},
+      {kh:'កន្ស',en:'KANSAY',read:'កន-ស',meaning:'ស្ពាន់ / brass; shining metal'},
+      {kh:'កបិល',en:'KABEL',read:'ករ-ពិ-ល',meaning:'ពណ៌ / brown color; earthy and grounded'},
+      {kh:'កម្ពុ',en:'KAMPUH',read:'កំ-ពុ',meaning:'ស្ពាន់ / copper; precious metal'},
+      {kh:'កមល',en:'KAMOL',read:'ករ-មល',meaning:'ផ្កា / lotus flower; purity and grace'},
+      {kh:'កំរ',en:'KOAMROANG',read:'កំ-រ-អង',meaning:'ខ្នង / back; spine; strong foundation'},
+      {kh:'កំសាន្ត',en:'KOAMSANT',read:'កំ-សាន-ត',meaning:'ស្ងប់ / peace of mind; serene and calm'},
+      {kh:'កញ្ញា',en:'KANHYA',read:'ករ-ញ-ញា',meaning:'ក្មេ / young woman; maiden; September born'},
+      {kh:'ករ្ណ',en:'KARN',read:'ករ-ណ',meaning:'ត្រ / ear; hero\'s name in epic'},
+      {kh:'ករ្ណពង្ស',en:'KARKANEIK',read:'ករ-ករ-ណ',meaning:'ថ្ងោ / sparkle; unique and shining one'},
+      {kh:'ករ្ណណ',en:'KARKANASO',read:'ករ-ករ-ណ-សូ',meaning:'ណាស / destiny shaper; one who shapes fate'},
+      {kh:'ករណ',en:'KARANEY',read:'ករ-រ-ណ',meaning:'ក / compassion; loving kindness'},
+      {kh:'ករី',en:'KAREY',read:'ករ-រី',meaning:'ដំ / female elephant; dignified beauty'},
+      {kh:'ករុណ',en:'KARUNA',read:'ករ-រុ-ណ',meaning:'អា / compassion; loving kindness; mercy'},
+      {kh:'ករ',en:'KARAKEIT',read:'ករ-រ-កើ',meaning:'ស្វ / onyx; black gemstone; precious'},
+      {kh:'ករុណិក',en:'KARUNIK',read:'ករ-រុ-និ-ក',meaning:'អ្ន / compassionate person; kind-hearted'},
+      {kh:'កល្យាណ',en:'KOALYAN',read:'ករ-ល-យ-ណ',meaning:'ល / beautiful; well-being; auspicious'},
+      {kh:'កល្យាណី',en:'KOALYANEY',read:'ករ-ល-យ-នី',meaning:'ស / beautiful woman; auspicious lady'},
+      {kh:'កវី',en:'KAHVEY',read:'ករ-វី',meaning:'ក / poet; one with literary genius'},
+      {kh:'កសិន',en:'KASIN',read:'ករ-សិ-ន',meaning:'ព / concentration; meditative focus'},
+      {kh:'កល',en:'KALEY',read:'ករ-លី',meaning:'ស / art; skill; twenty in counting'},
+      {kh:'កិច្ចក',en:'KITTIKUN',read:'ករ-ជំ-ក',meaning:'គុ / virtue; meritorious quality'},
+      {kh:'កិច្ច',en:'KITYA',read:'ករ-ត-យ',meaning:'ស / duty; action; proper conduct'},
+      {kh:'កិន',en:'KEINOR',read:'ករ-នូ',meaning:'ក / Kinnor; mythical bird-human'},
+      {kh:'កិរិយ',en:'KIRIYA',read:'ករ-រិ-យ',meaning:'ស / action; duty; righteous deed'},
+      {kh:'គូ',en:'KONH CHARA',read:'គូ-ន-ចរ',meaning:'ប / child of good conduct; noble offspring'},
+      {kh:'ក្លែ',en:'KLEM',read:'ក-លែ-ម',meaning:'ផ / sweet and gentle; kind nature'},
+      {kh:'ករ',en:'KLAY',read:'ករ-លី',meaning:'ស / far; distant; reaching beyond'},
+      {kh:'កូ',en:'KOMAR',read:'កូ-ម',meaning:'ក / child; youthful; innocent beauty'},
+      {kh:'ករ',en:'KOMOUT',read:'ករ-មូ',meaning:'ផ / dark blue lotus; rare beauty'},
+      {kh:'ករ',en:'KOMPHEAH',read:'ករ-មព',meaning:'ស / vow; solemn promise; commitment'},
+      {kh:'ករ',en:'KOY',read:'ករ-យ',meaning:'ស / kind; gracious; generous giving'},
+      {kh:'ករ',en:'KOL THIDA',read:'ករ-ល-ធី-ដា',meaning:'ក / daughter of the clan; family jewel'},
+      {kh:'ករ',en:'KOHLARP',read:'ករ-ល-រ',meaning:'ក / rose; beautiful flower; blossom'},
+      {kh:'ករ',en:'KOSAL',read:'ករ-ស-ល',meaning:'ស / skilled; expert; capable; competent'},
+      {kh:'ករ',en:'KOSUMAH',read:'ករ-សុ-ម',meaning:'ផ / flower; floral beauty; blossoming'},
+      {kh:'ក្រ',en:'KROAVANN',read:'ក-រ-វ-ន',meaning:'ស / forest; natural world; wilderness'},
+      {kh:'ក្រ',en:'KROASNA',read:'ក-រ-ស-ន',meaning:'ស / graceful and beautiful; elegant one'},
+  ],
+  'ខ':[
+      {kh:'ខត្តិយ',en:'KHATTIYA',read:'ខ-ត-តិ-យ',meaning:'ក្ស / warrior noble; royal class; kshatriya'},
+      {kh:'ខន្ដី',en:'KHANTEY',read:'ខន-ដី',meaning:'ស / patience; forbearance; tolerance'},
+      {kh:'ខែម',en:'KHAEM',read:'ខែ-ម',meaning:'ស / fresh; beautiful; charming; attractive'},
+      {kh:'ខណ',en:'KHEY NA',read:'ខ-ណ',meaning:'ស / knowledge; star of awareness; bright mind'},
+      {kh:'ខ',en:'KHEYR',read:'ខ-យ',meaning:'ក / to care; cherish; protect with love'},
+      {kh:'ខ',en:'KHEYRAHCHEAT',read:'ខ-យ-រ-ជ',meaning:'ជ / national pride; love of nation; patriot'},
+      {kh:'ខន',en:'KHON',read:'ខ-ន',meaning:'ម / person; human being; noble soul'},
+      {kh:'ខៀវ',en:'KHIEV',read:'ខ-យ',meaning:'ព / blue-green; sky color; vast like sky'},
+      {kh:'ខេមា',en:'KHEMA',read:'ខ-ម',meaning:'ស / peace; safety; protection; shelter'},
+      {kh:'ខេមរ',en:'KHEMARA',read:'ខ-ម-រ',meaning:'ខ / Khmer; Cambodian identity; heritage'},
+      {kh:'ខេមរិន',en:'KHEMRIN',read:'ខ-ម-រិ-ន',meaning:'ការ / protector of Cambodia; guardian'},
+      {kh:'ខេមរាំង',en:'KHEMARIANGSEY',read:'ខ-ម-រ-ស',meaning:'ខ / Khmer brightness; luminous Cambodia'},
+      {kh:'ខេមរក',en:'KHEMARAK',read:'ខ-ម-រ-ក',meaning:'ស / Cambodian gem; precious jewel'},
+      {kh:'ខេមរកវង',en:'KHEMARAK VONG',read:'ខ-ម-រ-ក-វ',meaning:'ក / royal Cambodian lineage; noble clan'},
+      {kh:'ខេមរកវង្សា',en:'KHEMARAK VONGSA',read:'ខ-ម-រ-ក-វ-ស',meaning:'ក / Cambodian royal family dynasty'},
+      {kh:'ខេមររ',en:'KHEMARAK RIANGSEY',read:'ខ-ម-រ-ក-រ-ស',meaning:'ស / radiant Cambodian glory; bright fame'},
+      {kh:'ខ័ន',en:'KHAN',read:'ខ-ន',meaning:'ទ / sword; brave and strong; warrior'},
+      {kh:'ខ',en:'KHON2',read:'ខ-ន',meaning:'ស / ivory; graceful and rare; elegant'},
+      {kh:'ខ',en:'KHORN',read:'ខ-ន',meaning:'ដ / strong; resilient; enduring strength'},
+      {kh:'ខ',en:'KHY',read:'ខ',meaning:'ជ / life path; destiny; fate'},
+      {kh:'ខ',en:'KHYM',read:'ខ-ំ',meaning:'ស / harmony; peaceful living; balance'},
+      {kh:'ខ',en:'KHAM',read:'ខ-ំ',meaning:'ស / wealth; abundance; richness; treasure'},
+      {kh:'ខ',en:'KHARANY',read:'ខ-រ-ណ',meaning:'ស / noble woman; high virtue; dignified'},
+      {kh:'ខ',en:'KHEAN',read:'ខ-អ',meaning:'ប / full; complete; prosperous; abundant'},
+      {kh:'ខ',en:'KHUN',read:'ខ-ន',meaning:'គ / virtue; benefit; noble quality; merit'},
+      {kh:'ខ',en:'KHAY',read:'ខ-យ',meaning:'ស / dawn; new light; bright morning sun'},
+      {kh:'ខ',en:'KHAYNA',read:'ខ-ន',meaning:'ស / graceful conduct; noble bearing'},
+      {kh:'ខ',en:'KHAYNANUKOLE',read:'ខ-ន-ន-ក',meaning:'ស / graceful and learned; noble scholar'},
+      {kh:'ខ',en:'KHEYRM',read:'ខ-ំ',meaning:'ស / crystal; clear; pure and transparent'},
+      {kh:'ខ',en:'KHINHNA',read:'ខ-ន',meaning:'ស / small; delicate; precious little'},
+  ],
+  'គ':[
+      {kh:'គង',en:'KONG',read:'គ-ង',meaning:'ឈ / gong drum; honor; resonant sound'},
+      {kh:'គំ',en:'KONGKEA',read:'គំ-គ',meaning:'ស / lotus; pure lotus beauty'},
+      {kh:'គ',en:'KOUCH',read:'គ-ច',meaning:'ស / graceful; elegant; poised walk'},
+      {kh:'គណ',en:'KUN',read:'គ-ណ',meaning:'គ / virtue; merit; goodness; quality'},
+      {kh:'គ',en:'KOUNN',read:'គ-ន',meaning:'ក / child; beloved offspring; precious'},
+      {kh:'គ',en:'KUNG',read:'គ-ង',meaning:'ឧ / palace; noble residence; royal home'},
+      {kh:'គ',en:'KOUM',read:'គ-ំ',meaning:'ស / group; cluster; together in unity'},
+      {kh:'គ',en:'KOUMPHY',read:'គ-ំ-ភ',meaning:'ស / group of flowers; floral cluster'},
+  ],
+  'ឃ':[
+      {kh:'ឃាំ',en:'KHEAM',read:'ឃ-ំ',meaning:'ធ / strong; firm; stable; steadfast'},
+      {kh:'ឃ',en:'KHEUNHH',read:'ឃ-ញ',meaning:'ឃ / visionary; one who sees clearly'},
+  ],
+  'ង':[
+      {kh:'ងារ',en:'NGEAR',read:'ង-រ',meaning:'ស / ivory; graceful and rare; elegant'},
+      {kh:'ង៉ែត',en:'NGET',read:'ង-ត',meaning:'ដ / firm; determined; focused; resolved'},
+      {kh:'ង',en:'NGEAR2',read:'ង',meaning:'ស / ivory tusk; dignified elegance'},
+  ],
+  'ច':[
+      {kh:'ចក្រ',en:'CHAKR',read:'ចក-ក',meaning:'ចក / wheel; cycle; chakra energy; power'},
+      {kh:'ចក្រីស',en:'CHAKROEUSN',read:'ចក-រ-ស-ន',meaning:'ស / sun wheel; radiant solar power'},
+      {kh:'ចក្រពង',en:'CHAKRAPONG',read:'ចក-រ-ពង',meaning:'ស / Chakrapong mountain; sacred peak'},
+      {kh:'ចក្រាយុធ',en:'CHAKRAYUTH',read:'ចក-រ-យុ-ធ',meaning:'យ / warrior with chakra weapon; armed hero'},
+      {kh:'ចក្រាវុធ',en:'CHAKRAVUTH',read:'ចក-រ-វុ-ធ',meaning:'ប / divine weapon bearer; sacred warrior'},
+      {kh:'ចក្រី',en:'CHAKREY',read:'ចក-រ',meaning:'ព / royal sword; king\'s emblem; regal'},
+      {kh:'ចារ',en:'CHAR',read:'ចរ-រ',meaning:'ដ / far reaching; noble distance; wide range'},
+      {kh:'ចំ',en:'CHAP',read:'ចំ-ប',meaning:'ច / fresh; energetic; quick; lively'},
+      {kh:'ចំ',en:'CHAMARY',read:'ចំ-ម-រ',meaning:'ក / yak tail fan; symbol of royalty'},
+      {kh:'ចំរើន',en:'CHAMROEUN',read:'ចំ-រ',meaning:'ច / progress; flourish; growth; advance'},
+      {kh:'ចំបក',en:'CHAMBAK',read:'ចំ-ប-ក',meaning:'ផ / champak flower; fragrant beauty'},
+      {kh:'ចំ',en:'CHALANA',read:'ចំ-ល-ន',meaning:'ដ / graceful movement; flowing beauty'},
+      {kh:'ចន្ទ',en:'CHANDA',read:'ចន-ត',meaning:'ព / moon; desire; lunar beauty; cool light'},
+      {kh:'ចន្ទតារា',en:'CHANDTARA',read:'ចន-ត-ត-រ',meaning:'ព / moon and stars; celestial beauty'},
+      {kh:'ចំ',en:'CHUM',read:'ចំ-ំ',meaning:'ក / group; gathering; unity; assembly'},
+      {kh:'ចំ',en:'CHUMNIT',read:'ចំ-ន-ត',meaning:'ស / wisdom; deep intelligence; sharp mind'},
+      {kh:'ចំ',en:'CHOMNO',read:'ចំ-ណ',meaning:'ក / knowledge keeper; wise one; scholar'},
+      {kh:'ចំ',en:'CHUMNENH',read:'ចំ-ន-ន',meaning:'ច / number; quantity; prosperity count'},
+      {kh:'ចំ',en:'CHOODEUK',read:'ចំ-ដ-ើ',meaning:'ស / precious; cherished; beloved gathering'},
+      {kh:'ចំ',en:'CHOOMNIT',read:'ចំ-ន-ត',meaning:'ស / refined wisdom; precise intelligence'},
+      {kh:'ចំ',en:'CHOMNO2',read:'ចំ-ណ',meaning:'ស / profound knowledge; deep learning'},
+  ],
+  'ឆ':[
+      {kh:'ឆ្ដា',en:'CHHDA',read:'ឆ-ត',meaning:'ណ / umbrella; protected; sheltered one'},
+      {kh:'ឆ្ដាភា',en:'CHHDAPHEA',read:'ឆ-ត-ភ',meaning:'ណ / divine canopy; royal protection; shelter'},
+      {kh:'ឆ្ពោ',en:'CHHOUK',read:'ឆ-ព',meaning:'ស / lotus lake; deep and pure beauty'},
+      {kh:'ឆ្ពោន',en:'CHHOPPOANN',read:'ឆ-ព-ន',meaning:'ស / full of grace; satisfied and complete'},
+      {kh:'ឆ',en:'CHHORVORN',read:'ឆ-វ-រ-ន',meaning:'ស / fragrant; sweet-smelling woman; lovely'},
+      {kh:'ឆ',en:'CHHORVYVOAN',read:'ឆ-វ-វ-ន',meaning:'ស / fragrant and gentle; sweet and soft'},
+      {kh:'ឆ',en:'CHHAY',read:'ឆ-យ',meaning:'ស / fresh; lively; energetic; spirited'},
+      {kh:'ឆ',en:'CHHAYA',read:'ឆ-យ',meaning:'ស / shadow; shade; gentle coolness; refuge'},
+      {kh:'ឆ',en:'CHHOEURT',read:'ឆ-ើ-ត',meaning:'ស / pretty; beautiful; attractive; lovely'},
+      {kh:'ឆ',en:'CHHOME',read:'ឆ-ំ',meaning:'ស / sweet fragrance; pleasant aroma; lovely scent'},
+      {kh:'ឆ',en:'CHHOUK2',read:'ឆ-ក',meaning:'ស / deep lake; lotus pond; clear water'},
+      {kh:'ឆ',en:'CHHEAN',read:'ឆ-ន',meaning:'ស / full; bountiful; prosperous; abundant'},
+      {kh:'ឆ',en:'CHHOEUTEAL',read:'ឆ-ើ-ត-ល',meaning:'ស / ivory heart; gentle pure soul'},
+  ],
+  'ជ':[
+      {kh:'ជ័យ',en:'CHEY',read:'ជ-យ',meaning:'ជ / victory; triumph; success; winner'},
+      {kh:'ជ័យ',en:'CHEYVONG',read:'ជ-យ-វ',meaning:'ជ / victorious lineage; royal triumph'},
+      {kh:'ជីវ',en:'CHIV',read:'ជ-វ',meaning:'ជ / life; living; vitality; life force'},
+      {kh:'ជូន',en:'CHOUN',read:'ជ-ន',meaning:'ផ / to give; offer; dedicate with love'},
+      {kh:'ជាតិ',en:'CHEAT',read:'ជ-ត',meaning:'ជ / nation; race; noble birth; origin'},
+      {kh:'ជ',en:'CHON',read:'ជ-ន',meaning:'ស / pure; clear; pristine; crystal clear'},
+      {kh:'ជ',en:'CHOMNO2',read:'ជ-ំ-ណ',meaning:'ស / true knowledge; authentic wisdom'},
+  ],
+  'ឈ':[
+      {kh:'ឈ',en:'CHHEUM',read:'ឈ-ំ',meaning:'ជ / tall; upright; standing proud; dignified'},
+      {kh:'ឈ',en:'CHHEUN',read:'ឈ-ន',meaning:'ស / connected; linked; joined together'},
+  ],
+  'ញ':[
+      {kh:'ញ',en:'NHEAR',read:'ញ',meaning:'ម / graceful; elegant; flowing; refined'},
+      {kh:'ញ',en:'NHET',read:'ញ-ត',meaning:'ស / quick; sharp; agile; swift and keen'},
+  ],
+  'ដ':[
+      {kh:'ដារ',en:'DAR',read:'ដ-រ',meaning:'ហ / brave; bold; courageous; heroic'},
+      {kh:'ដើម',en:'DAEUM',read:'ដ-ំ',meaning:'ដ / tree trunk; origin; source; root'},
+      {kh:'ដំណែល',en:'DOMNEL',read:'ដំ-ណ-ល',meaning:'ផ / petal; delicate beauty; gentle grace'},
+      {kh:'ដំណាំ',en:'DOMNAL',read:'ដំ-ណ-ំ',meaning:'ដ / crop; something planted; careful nurture'},
+      {kh:'ដំ',en:'DOMKOEUNG',read:'ដំ-ក-ង',meaning:'ស / Domkoeung mountain; steadfast peak'},
+      {kh:'ដំ',en:'DOMRA',read:'ដំ-រ',meaning:'ដ / elephant path; powerful journey; mighty'},
+      {kh:'ដំ',en:'DOMRES',read:'ដំ-រ-ស',meaning:'ស / Domrey elephant; great strength'},
+      {kh:'ដំ',en:'DOKCHAN',read:'ដំ-ច-ន',meaning:'ស / blooming flower; blossoming beauty'},
+      {kh:'ដំ',en:'DOARAP',read:'ដំ-រ-ប',meaning:'ស / starfruit; refreshing sweetness'},
+      {kh:'ដំ',en:'DAN',read:'ដ-ន',meaning:'ស / to give; generous offering; giving'},
+      {kh:'ដំ',en:'DANY',read:'ដ-ន',meaning:'ស / full; generous; abundance giving'},
+      {kh:'ដំ',en:'DAMRY',read:'ដំ-រ',meaning:'ស / queen; noble woman; dignified lady'},
+      {kh:'ដំ',en:'DAV',read:'ដ-វ',meaning:'ស / story; legend; history; legacy'},
+      {kh:'ដំ',en:'DEYKA',read:'ដ-យ-ក',meaning:'ស / beautiful; lovely; graceful; charming'},
+      {kh:'ដំ',en:'DUONG',read:'ដ-ង',meaning:'ស / torch; bright light; guiding star'},
+      {kh:'ដំ',en:'DEN',read:'ដ-ន',meaning:'ស / firm; stable; solid; steadfast'},
+  ],
+  'ឋ':[
+      {kh:'ឋិត',en:'THHIT',read:'ឋ-ត',meaning:'ស / stable; standing firm; unshaken; steadfast'},
+      {kh:'ឋាន',en:'THHAN',read:'ឋ-ន',meaning:'ស / place; position; high status; realm'},
+  ],
+  'ត':[
+      {kh:'តារា',en:'DARA',read:'ត-រ',meaning:'ផ / star; celebrity; shining one; luminary'},
+      {kh:'តក្ក',en:'TAKAVIT',read:'ត-ក-វ',meaning:'ឧ / highest excellence; supreme virtue'},
+      {kh:'តោន',en:'TOANN',read:'ត-ន',meaning:'ស / gold; precious; valuable; treasured'},
+      {kh:'តារុណ',en:'TARUN',read:'ត-រ-ន',meaning:'ព / dawn; youth; new beginning; sunrise'},
+      {kh:'តារុណី',en:'TARUNEY',read:'ត-រ-នី',meaning:'ក / young woman; fresh beauty; maiden'},
+      {kh:'ទាន',en:'TAN',read:'ទ-ន',meaning:'ទ / give; generous; charitable; giving'},
+      {kh:'ទូហ្ល',en:'TOHLA',read:'ទ-ល',meaning:'ស / scale; balance; justice; fairness'},
+      {kh:'ទេវី',en:'DEVI',read:'ទ-វ',meaning:'ស / goddess; divine woman; sacred feminine'},
+      {kh:'ទេព',en:'DEPY',read:'ទ-ព',meaning:'ស / sky; heavenly realm; radiant divine'},
+      {kh:'ទេពន',en:'DEVINT',read:'ទ-វ-ន',meaning:'ស / divine being; celestial presence'},
+      {kh:'ទិភ',en:'DIVEA',read:'ទ-វ',meaning:'ស / heavenly body; divine form; celestial'},
+      {kh:'ទិ',en:'DIVORN',read:'ទ-វ-ន',meaning:'ក / divine gift; heavenly blessing'},
+      {kh:'ទ',en:'DIKHEASOK',read:'ទ-ខ-ស',meaning:'ស / radiant happiness; glowing joy; bright'},
+      {kh:'ទ',en:'DIKHEAYUH',read:'ទ-ខ-យ',meaning:'ស / radiant life; luminous existence'},
+      {kh:'ធីតា',en:'THIDA',read:'ធ-ត',meaning:'ក / daughter; pure maiden; princess'},
+      {kh:'ធារ',en:'THAR',read:'ធ-រ',meaning:'ទ / water stream; flowing grace; river'},
+      {kh:'ធំ',en:'THOM',read:'ធ-ំ',meaning:'ធ / great; large; magnificent; grand'},
+      {kh:'ធារ',en:'THARREA',read:'ធ-រ',meaning:'ស / river; stream; flowing abundance'},
+      {kh:'ថ្នាំ',en:'THAHNIT',read:'ថ-ន-ត',meaning:'ស / truthful; honest; reliable; sincere'},
+      {kh:'ថ្នាំ',en:'THAHNITA',read:'ថ-ន-ត-ត',meaning:'ស / young truthful woman; honest girl'},
+      {kh:'ថ្នាំ',en:'THAHNIN',read:'ថ-ន-ន',meaning:'ស / inner truth; pure heart; genuine'},
+      {kh:'ថូន',en:'THOUN',read:'ថ-ន',meaning:'ជ / firm; reliable; solid character'},
+      {kh:'ថូន',en:'THOUNTHEAN',read:'ថ-ន-ន',meaning:'ស / strong and prosperous family'},
+      {kh:'ថូន',en:'THOUNLEAP',read:'ថ-ន-ល',meaning:'ស / abundant virtue; growing merit'},
+      {kh:'ថ',en:'THOTAROATH',read:'ថ-ត-រ',meaning:'ស / powerful ruler; great protector'},
+      {kh:'ថ',en:'THA',read:'ថ',meaning:'ថ / to say; speak truth; bright clarity'},
+      {kh:'ថ',en:'THNAK',read:'ថ-ន-ក',meaning:'ថ / level; grade; high ranking; tier'},
+      {kh:'ទ',en:'TINMONY',read:'ទ-ន-ម-ន',meaning:'ស / diamond; precious gem; crystal clear'},
+      {kh:'ទ',en:'TINROATN',read:'ទ-ន-រ-ន',meaning:'ស / precious and firm; strong gem'},
+  ],
+  'ន':[
+      {kh:'នារី',en:'NEAREY',read:'ន-រ',meaning:'ស / woman; lady; feminine grace; beauty'},
+      {kh:'នាថ',en:'NEATH',read:'ន-ថ',meaning:'ម / lord; protector; guardian; master'},
+      {kh:'នោ',en:'NOREAK',read:'ន-រ',meaning:'ប / man; hero; noble one; brave person'},
+      {kh:'នោ',en:'NOKOR',read:'ន-ក',meaning:'ក / city; kingdom; civilization; realm'},
+      {kh:'នោ',en:'NOKORCHUM',read:'ន-ក-ច',meaning:'ក / center of kingdom; capital city'},
+      {kh:'ន',en:'NUPAROATN',read:'ន-ប-រ-ន',meaning:'ស / nine gems; complete blessing; full treasure'},
+      {kh:'នា',en:'NEAHPHEA',read:'ន-ភ',meaning:'ស / sky; horizon; vast and open view'},
+      {kh:'នី',en:'NY',read:'ន',meaning:'ស / water; purity; grace; flowing beauty'},
+      {kh:'នួន',en:'NUON',read:'ន-ន',meaning:'ទ / soft; tender; gentle; kind; delicate'},
+      {kh:'នួន',en:'NUON ANONG',read:'ន-ន-អ',meaning:'ស / soft graceful body; tender beauty'},
+      {kh:'ន',en:'NUOB',read:'ន-ប',meaning:'ស / supple; flexible; tender; yielding'},
+      {kh:'ន',en:'NENONE',read:'ន-ន-ន',meaning:'ស / graceful and tender; delicate beauty'},
+      {kh:'ន',en:'NEM',read:'ន-ំ',meaning:'ភ / taste; model; example; good guide'},
+      {kh:'ន',en:'NEAKTY',read:'ន-ក',meaning:'ស / spirit; guardian deity; sacred being'},
+      {kh:'ន',en:'NEITR',read:'ន-ត',meaning:'ភ / eye; vision; sight; clear perception'},
+      {kh:'នេ',en:'NEITRA',read:'ន-ត-រ',meaning:'ស / beautiful eye; clear and pure vision'},
+      {kh:'ន',en:'NILPISAY',read:'ន-ល-ស',meaning:'ស / pure stream; flowing clarity; clean flow'},
+      {kh:'ន',en:'NILROTN',read:'ន-ល-រ-ន',meaning:'ន / jewel stream; precious flowing beauty'},
+      {kh:'ន',en:'NIVATN',read:'ន-វ-ន',meaning:'ស / freedom; liberation; release; free spirit'},
+      {kh:'ន',en:'NISAKOAR',read:'ន-ស-ក',meaning:'ស / peaceful realm; tranquil land; calm'},
+      {kh:'ន',en:'NISAY',read:'ន-ស',meaning:'ស / character; virtue; good nature; habit'},
+      {kh:'ន',en:'NILPISEY',read:'ន-ល-ស',meaning:'ស / pure sight; visionary clarity'},
+      {kh:'ន',en:'NILROTN2',read:'ន-ល-រ',meaning:'ន / river of gems; precious flowing water'},
+  ],
+  'ប':[
+      {kh:'បណ្ណ',en:'BANN',read:'ប-ណ',meaning:'ស / leaf; knowledge; literature; wisdom'},
+      {kh:'បន្ទ',en:'BAND',read:'ប-ន',meaning:'ចំ / bond; tie; connection; unity'},
+      {kh:'បណ្ឌិត',en:'BANDIT',read:'ប-ន-ត',meaning:'ប / scholar; wise person; learned one'},
+      {kh:'បូ',en:'BOPH',read:'ប-ភ',meaning:'ផ / flower; blossom; natural beauty'},
+      {kh:'បូ',en:'BOPHAR',read:'ប-ភ-រ',meaning:'ម / bouquet; flower cluster; floral grace'},
+      {kh:'ប',en:'BANG',read:'ប-ង',meaning:'ព / older sibling; respected elder; first'},
+      {kh:'ប',en:'BANGEK',read:'ប-ង-ក',meaning:'ច / first; eldest; pioneer; original'},
+      {kh:'ប',en:'BANG-ANG',read:'ប-ង-អ',meaning:'ស / sound of gong; resonant call; echo'},
+      {kh:'ប',en:'BANG-EK',read:'ប-ង-ក',meaning:'ស / number one; original; primary; first'},
+      {kh:'ប',en:'PANHCHAHPOAR',read:'ប-ន-ច-ភ',meaning:'ស / five flowers; quintuple blossom; full bloom'},
+      {kh:'ប',en:'BANDID',read:'ប-ន-ត',meaning:'ស / scholar; intellectual; learned person'},
+      {kh:'ប',en:'BORPITR',read:'ប-រ-ព-ត',meaning:'ស / paternal ancestor; noble origin; ancestry'},
+      {kh:'ប',en:'BORIKHAR',read:'ប-រ-ខ-រ',meaning:'ន / aura; grace; surrounding light; glow'},
+      {kh:'ប',en:'PRACH',read:'ប-រ-ច',meaning:'ប / intelligence; great wisdom; keen mind'},
+      {kh:'ប',en:'PRACHNHA',read:'ប-រ-ជ-ញ',meaning:'ប / wisdom; intelligence; clarity of mind'},
+      {kh:'ប',en:'PRAKAR',read:'ប-រ-ក',meaning:'ស / protect; guard; enclose; shield'},
+      {kh:'ប',en:'PRATHNA',read:'ប-រ-ថ-ន',meaning:'ជ / wish; prayer; heartfelt aspiration'},
+      {kh:'ប',en:'PROASETHY',read:'ប-រ-ស',meaning:'ស / prosperity; abundance; wealth; plenty'},
+      {kh:'ប',en:'PROASOEUR',read:'ប-រ-ស',meaning:'ស / morning; fresh start; new day; dawn'},
+      {kh:'ប',en:'PROASNAR',read:'ប-រ-ស-ន',meaning:'ស / natural freshness; earthy clarity'},
+      {kh:'ព',en:'PONHEA',read:'ព-ន',meaning:'ន / noble; aristocratic; high born; royal'},
+      {kh:'ព',en:'PONHEACREK',read:'ព-ន-ច',meaning:'ន / royal light; brilliant nobility; bright'},
+      {kh:'ព',en:'PONNAREAY',read:'ព-ន-ន-រ',meaning:'ន / royal radiance; luminous noble grace'},
+      {kh:'ព',en:'POR',read:'ព-រ',meaning:'ន / blessing; good fortune; prosperity'},
+      {kh:'ព',en:'PONLEAKENA',read:'ព-ន-ល-ន',meaning:'ន / young shoot; new growth; fresh life'},
+      {kh:'ព',en:'PONHEALOEU',read:'ព-ន-ល-ើ',meaning:'ន / floating nobility; graceful upper realm'},
+      {kh:'ព',en:'PONHEA3',read:'ព-ន',meaning:'ន / noble family; aristocratic lineage; clan'},
+  ],
+  'ផ':[
+      {kh:'ផ្ការ',en:'PHKAR',read:'ផ-ក-រ',meaning:'ផ / flower; blossom; blooming beauty'},
+      {kh:'ផ',en:'PHAL',read:'ផ-ល',meaning:'ផ / result; success; achievement; fruit'},
+      {kh:'ផ',en:'PHAHRANY',read:'ផ-រ-ណ',meaning:'ស / bright woman; luminous; radiant one'},
+      {kh:'ផ',en:'PHEANUH',read:'ផ-ន',meaning:'ស / full moon; complete; perfect; whole'},
+      {kh:'ផ',en:'PHEAKNY',read:'ផ-ក-ណ',meaning:'ស / auspicious omen; blessed sign; lucky'},
+  ],
+  'ភ':[
+      {kh:'ភក្ដ',en:'PHEAKD',read:'ភ-ក-ត',meaning:'ស / loyal; devoted; faithful; committed'},
+      {kh:'ភ័ក្រ',en:'PHEAKR',read:'ភ-ក-រ',meaning:'ន / dawn; face; luminous aspect; first light'},
+      {kh:'ភូ',en:'PHUMRY',read:'ភ-ំ-រ',meaning:'ន / earth; homeland; soil of life; land'},
+      {kh:'ភ',en:'PIPHEAK',read:'ភ-ភ-ក',meaning:'ន / auspicious; beautiful; blessed; fortunate'},
+      {kh:'ភ',en:'PITYEATHOR',read:'ភ-ត-យ-ថ',meaning:'ន / bright heavenly path; divine way'},
+      {kh:'ភ',en:'PITOUR',read:'ភ-ត-ូ-រ',meaning:'ន / divine father; celestial parent; holy'},
+      {kh:'ភ',en:'PITEAY',read:'ភ-ត',meaning:'ន / direction; path; purposeful way; route'},
+      {kh:'ភ',en:'PIN',read:'ភ-ន',meaning:'ន / fine; celestial instrument; music; art'},
+      {kh:'ភ',en:'PINTO',read:'ភ-ន-ត',meaning:'ន / steady; established; rooted; grounded'},
+      {kh:'ភ',en:'PINIT',read:'ភ-ន-ត',meaning:'ន / refined; careful; precise; meticulous'},
+      {kh:'ភ',en:'PINTORNG',read:'ភ-ន-ត-រ-ង',meaning:'ន / moonlight; luminous calm; gentle glow'},
+      {kh:'ភ',en:'PIPHORTTSACHA',read:'ភ-ភ-ត-ស-ច',meaning:'ស / auspicious glory; magnificent destiny'},
+  ],
+  'ម':[
+      {kh:'មាស',en:'MEAS',read:'ម-ស',meaning:'មា / gold; precious; most valued; golden'},
+      {kh:'មន',en:'MON',read:'ម-ន',meaning:'ស / mind; heart; Mon ethnic group; heritage'},
+      {kh:'មិត្ត',en:'MITT',read:'ម-ត',meaning:'ន / friend; companion; ally; comrade'},
+      {kh:'មិត្រ',en:'MITR',read:'ម-ត-រ',meaning:'ន / friend; comrade; the sun (Vedic sun god)'},
+      {kh:'ម',en:'MOM',read:'ម-ំ',meaning:'ន / grandmother; respected elder; matriarch'},
+      {kh:'មណូ',en:'MONO',read:'ម-ន',meaning:'ន / mind; heart; spirit; consciousness; soul'},
+      {kh:'មរកត',en:'MOROKAT',read:'ម-រ-ក-ត',meaning:'ត / emerald; precious green gem; green jewel'},
+      {kh:'មិ',en:'MIKAHSE',read:'ម-ក-ស',meaning:'ន / friend; companion; beloved; dear one'},
+      {kh:'ម',en:'MITTRA',read:'ម-ត-រ',meaning:'ន / friend; sun (Sanskrit); solar companion'},
+      {kh:'ម',en:'MEAKEA',read:'ម-ក',meaning:'ស / cloud; auspicious cloud; lofty'},
+      {kh:'ម',en:'MEALEA',read:'ម-ល',meaning:'ស / flower garland; wreath; floral crown'},
+      {kh:'ម',en:'MONY',read:'ម-ន',meaning:'ស / gem; jewel; precious stone; treasure'},
+      {kh:'ម',en:'MONIRATH',read:'ម-ន-រ-ថ',meaning:'ស / gem of righteousness; noble jewel'},
+      {kh:'ម',en:'MONIROTH',read:'ម-ន-រ-ថ',meaning:'ស / gem that fulfills wishes; wish jewel'},
+      {kh:'ម',en:'MORASA',read:'ម-រ-ស',meaning:'ស / flavor; taste; essence of life; vitality'},
+      {kh:'ម',en:'MEALEA2',read:'ម-ល',meaning:'ស / flower garland; gorgeous floral beauty'},
+      {kh:'ម',en:'MEAKEA2',read:'ម-ក',meaning:'ស / cloud formation; great and lofty beauty'},
+  ],
+  'យ':[
+      {kh:'យសសោ',en:'YASO',read:'យ-ស-ស',meaning:'ន / glory; fame; great renown; honor'},
+      {kh:'យសោ',en:'YASOTHAHREA',read:'យ-ស-ថ-រ',meaning:'ន / glorious realm; famous and honored land'},
+      {kh:'យាត្រា',en:'YEATRA',read:'យ-ត-រ',meaning:'ន / journey; ceremony; pilgrimage; voyage'},
+      {kh:'យាម',en:'YEAMAHNEALY',read:'យ-ម-ន-ល',meaning:'ន / beautiful like the sky; radiant beauty'},
+      {kh:'យាម',en:'YEAMAHVATTEY',read:'យ-ម-វ-ត',meaning:'ន / virtuous and beautiful; moral grace'},
+      {kh:'យាម',en:'YEAMIKA',read:'យ-ម-ម-ក',meaning:'ន / eternally beautiful; forever lovely'},
+      {kh:'យាម',en:'YEAMINY',read:'យ-ម-ម-ន',meaning:'ន / night goddess; lunar beauty; moonlit grace'},
+      {kh:'យាម',en:'YEAMEA',read:'យ-ម-ម',meaning:'ន / eye; vision; perception; seeing beauty'},
+      {kh:'យី',en:'YIHOUP',read:'យ-ហ-ូ-ប',meaning:'ន / strong; robust; powerful; vigorous'},
+      {kh:'យុ',en:'YUHKUNTHOR',read:'យ-ហ-ន-ថ',meaning:'ន / peak of sacred mountain; high summit'},
+      {kh:'យ',en:'YEASOTHAHREA',read:'យ-ស-ថ-រ',meaning:'ស / glorious woman; honored and luminous'},
+  ],
+  'រ':[
+      {kh:'រតនៈ',en:'RATANA',read:'រ-ត-ន',meaning:'ន / gem; jewel; treasure; most precious'},
+      {kh:'រំ',en:'ROM',read:'រ-ំ',meaning:'ន / dance; classical Khmer dance; graceful'},
+      {kh:'រស្មី',en:'REAKSMEY',read:'រ-ក-ស',meaning:'ន / ray of light; beam of radiance; shine'},
+      {kh:'រិទ្ធ',en:'RITHY',read:'រ-ថ',meaning:'ន / power; supernatural ability; might'},
+      {kh:'រតនៈ',en:'ROTANAK',read:'រ-ត-ន-ក',meaning:'ន / gem; precious jewel; treasure; rare'},
+      {kh:'រំ',en:'ROMDOUL',read:'រ-ំ-ល',meaning:'ន / Cambodian national flower; fragrant grace'},
+      {kh:'រ',en:'ROTA',read:'រ-ត',meaning:'ន / chariot; vehicle of glory; power'},
+      {kh:'រ',en:'ROTHAVIRAK',read:'រ-ថ-វ-រ',meaning:'ន / chariot hero; powerful warrior; strong'},
+      {kh:'រ',en:'REACH',read:'រ-ជ',meaning:'ស / royal; king-like; noble; majestic'},
+      {kh:'រ',en:'REACHNA',read:'រ-ជ-ន',meaning:'ស / royal beauty; noble and graceful'},
+      {kh:'រ',en:'REAKSA',read:'រ-ក-ស',meaning:'ស / protection; guardian; safe and secure'},
+      {kh:'រ',en:'REAKSEY',read:'រ-ក-ស',meaning:'ស / light and protection; guardian ray'},
+      {kh:'រ',en:'RIN',read:'រ-ន',meaning:'ស / debt-free; liberated; freely flowing'},
+      {kh:'រ',en:'RITH',read:'រ-ថ',meaning:'ស / power; strength; might; determination'},
+      {kh:'រ',en:'RITA',read:'រ-ត',meaning:'ស / truth; righteousness; cosmic order'},
+      {kh:'រ',en:'ROTHANAK',read:'រ-ថ-ន-ក',meaning:'ស / jewel of power; gem of great strength'},
+  ],
+  'ល':[
+      {kh:'លេខ',en:'LEK',read:'ល-ខ',meaning:'ន / number; small; delicate; precious little'},
+      {kh:'លី',en:'LY',read:'ល',meaning:'ន / reason; mile; beautiful; lucky; graceful'},
+      {kh:'លា',en:'LENH',read:'ល-ញ',meaning:'ន / play; fun; carefree joy; lighthearted'},
+      {kh:'លាក',en:'LEAK',read:'ល-ក',meaning:'ន / angel; angel-like grace; heavenly beauty'},
+      {kh:'លីដា',en:'LIDA',read:'ល-ត',meaning:'ន / delicate; dainty; refined grace; elegant'},
+      {kh:'ល',en:'LEAPHEA',read:'ល-ភ',meaning:'ស / beautiful; graceful appearance; lovely'},
+      {kh:'ល',en:'LEKENA',read:'ល-ក-ន',meaning:'ស / beautiful sign; auspicious mark; lucky'},
+      {kh:'ល',en:'LEAP',read:'ល-ប',meaning:'ស / blossom; blooming; flourishing; growing'},
+      {kh:'ល',en:'LEANA',read:'ល-ន',meaning:'ស / tender; gentle; soft beauty; delicate'},
+      {kh:'ល',en:'LINA',read:'ល-ន',meaning:'ស / delicate; refined; graceful; fine beauty'},
+      {kh:'ល',en:'LINDA',read:'ល-ន-ត',meaning:'ស / beautiful; lovely; graceful; elegant'},
+      {kh:'ល',en:'LINDY',read:'ល-ន-ត',meaning:'ស / graceful and free; liberated beauty'},
+      {kh:'ល',en:'LINNA',read:'ល-ន',meaning:'ស / tender love; gentle affection; soft'},
+      {kh:'ល',en:'LITA',read:'ល-ត',meaning:'ស / dedicated; devoted; committed; loyal'},
+      {kh:'ល',en:'LIZA',read:'ល-ស',meaning:'ស / graceful; elegant; refined; poised'},
+      {kh:'ល',en:'LOLA',read:'ល-ល',meaning:'ស / jewel; precious; rare gem; treasure'},
+      {kh:'ល',en:'LORA',read:'ល-រ',meaning:'ស / glory; honor; luminous; shining'},
+      {kh:'ល',en:'LOLY',read:'ល-ល',meaning:'ស / beautiful gem; precious and lovely'},
+  ],
+  'វ':[
+      {kh:'វ័ន',en:'VANN',read:'វ-ន',meaning:'ន / forest; wilderness; natural strength'},
+      {kh:'វីរ',en:'VIRAK',read:'វ-រ-ក',meaning:'ន / hero; brave person; valiant warrior'},
+      {kh:'វីរ',en:'VIRIYA',read:'វ-រ-យ',meaning:'ន / effort; perseverance; diligence; energy'},
+      {kh:'វីរ',en:'VIRA',read:'វ-រ',meaning:'ន / hero; brave; valiant; courageous'},
+      {kh:'វង',en:'VONG',read:'វ-ង',meaning:'ន / lineage; family; dynasty; noble clan'},
+      {kh:'វ',en:'VUTH',read:'វ-ថ',meaning:'ន / age; duration; span of life; lifetime'},
+      {kh:'វ',en:'VICHHEKA',read:'វ-ច-ក',meaning:'ស / knowledge; discernment; sharp wisdom'},
+      {kh:'វ',en:'VICHHEA',read:'វ-ច',meaning:'ស / wisdom; knowledge; enlightenment; insight'},
+      {kh:'វ',en:'VICHHEANA',read:'វ-ច-ន',meaning:'ស / analytical wisdom; keen discerning mind'},
+      {kh:'វ',en:'VIRAK2',read:'វ-រ-ក',meaning:'ស / heroic; brave; valiant; noble spirit'},
+      {kh:'វ',en:'VIREAK',read:'វ-រ-ក',meaning:'ស / heroic; brave and noble; champion'},
+      {kh:'វ',en:'VONG2',read:'វ-ង',meaning:'ស / dynasty; royal lineage; noble clan line'},
+      {kh:'វ',en:'VONGSAVANH',read:'វ-ង-ស-វ',meaning:'ស / celestial dynasty; heavenly noble line'},
+      {kh:'វ',en:'VOTEY',read:'វ-ត',meaning:'ស / duty; virtue; obligation fulfilled; right'},
+      {kh:'វ',en:'VIRA2',read:'វ-រ',meaning:'ស / brave heart; true heroism; courage'},
+  ],
+  'ស':[
+      {kh:'សុភា',en:'SOPHEA',read:'ស-ភ',meaning:'ន / wise; learned; knowledgeable; sage'},
+      {kh:'សុភាព',en:'SOPHEAP',read:'ស-ភ-ព',meaning:'ន / beautiful; good manners; gracious; refined'},
+      {kh:'សុធី',en:'SOTHY',read:'ស-ថ',meaning:'ន / good; virtuous; upright; moral'},
+      {kh:'សុខា',en:'SOKHA',read:'ស-ខ',meaning:'ន / happy; healthy; joyful living; well'},
+      {kh:'សុវណ្ណ',en:'SOVAN',read:'ស-វ-ណ',meaning:'ន / golden; precious; valued; golden one'},
+      {kh:'សុវណ្ណា',en:'SOVANNA',read:'ស-វ-ណ-ន',meaning:'ន / gold; golden beauty; precious one'},
+      {kh:'ស្រីលាក',en:'SREYLEAK',read:'ស-រ-ល-ក',meaning:'ន / angel girl; heavenly daughter; graceful'},
+      {kh:'ស្រីនិ',en:'SREYNICH',read:'ស-រ-ន-ច',meaning:'ន / gentle girl; soft and kind; tender'},
+      {kh:'ស្រីម',en:'SREYMOM',read:'ស-រ-ំ',meaning:'ន / beloved girl; cherished daughter; dear'},
+      {kh:'ស្រី',en:'SREY',read:'ស-រ',meaning:'ន / girl; woman; female grace; lady'},
+      {kh:'សុខែ',en:'SOKHEM',read:'ស-ខ-ំ',meaning:'ន / comfortable; ease; contentment; peace'},
+      {kh:'ស',en:'SAMBO',read:'ស-ំ-ប',meaning:'ន / together; unity; harmony; joined'},
+      {kh:'ស',en:'SAMATH',read:'ស-ម-ថ',meaning:'ន / calm; tranquil; meditative peace; serene'},
+      {kh:'ស',en:'SAMBATH',read:'ស-ំ-ប-ថ',meaning:'ន / wealth; prosperity; fortune; abundance'},
+      {kh:'ស',en:'SAMRITH',read:'ស-ំ-រ-ថ',meaning:'ន / success; achievement; accomplishment'},
+      {kh:'ស',en:'SAMNEANG',read:'ស-ំ-ន-ង',meaning:'ន / fortune; luck; destiny; blessed fate'},
+      {kh:'ស',en:'SARATH',read:'ស-រ-ថ',meaning:'ន / autumn; season of harvest; maturity'},
+      {kh:'ស',en:'SARITH',read:'ស-រ-ថ',meaning:'ន / autumn season; time of ripeness; season'},
+      {kh:'ស',en:'SEILA',read:'ស-ល',meaning:'ន / stone; rock; firm and enduring; solid'},
+      {kh:'ស',en:'SEREY',read:'ស-រ',meaning:'ន / free; liberated; independent; unbound'},
+      {kh:'ស',en:'SETTHA',read:'ស-ថ',meaning:'ន / rich; prosperous; wealthy; abundant'},
+      {kh:'ស',en:'SOKCHEA',read:'ស-ច',meaning:'ន / sincere; truthful; honest joy; pure'},
+      {kh:'ស',en:'SOKHOM',read:'ស-ខ-ំ',meaning:'ន / comfort; well-being; ease; contentment'},
+      {kh:'ស',en:'SOKMEAN',read:'ស-ន',meaning:'ន / happy and soft; gentle joy; kind bliss'},
+      {kh:'ស',en:'SOKNEA',read:'ស-ន',meaning:'ន / happy; gentle; joyful; pleasant'},
+      {kh:'ស',en:'SOKNEATH',read:'ស-ន-ថ',meaning:'ន / lord of happiness; joyful guardian'},
+      {kh:'ស',en:'SOKSAN',read:'ស-ស-ន',meaning:'ន / peaceful happiness; joyful peace; bliss'},
+      {kh:'ស',en:'SOMALY',read:'ស-ម-ល',meaning:'ន / jasmine flower; fragrant beauty; lovely'},
+      {kh:'ស',en:'SOMARA',read:'ស-ម-រ',meaning:'ន / remember; precious memory; cherished'},
+      {kh:'ស',en:'SOPHANNA',read:'ស-ភ-ន-ន',meaning:'ន / golden wisdom; enlightened beauty; bright'},
+      {kh:'ស',en:'SOPHEAK',read:'ស-ភ-ក',meaning:'ន / wise and auspicious; learned blessed one'},
+      {kh:'ស',en:'SOPHEAKTRA',read:'ស-ភ-ក-ត',meaning:'ន / auspicious eye of wisdom; enlightened'},
+      {kh:'ស',en:'SOPHEARY',read:'ស-ភ-រ',meaning:'ន / wise and beautiful; learned graceful one'},
+      {kh:'ស',en:'SOPHORS',read:'ស-ភ-ស',meaning:'ន / wise and bright; luminous wisdom; smart'},
+      {kh:'ស',en:'SOPHOUN',read:'ស-ភ-ន',meaning:'ន / wise and full; complete wisdom; whole'},
+      {kh:'ស',en:'SORIYA',read:'ស-រ-យ',meaning:'ន / sun; solar radiance; bright sun child'},
+      {kh:'ស',en:'SOTHEA',read:'ស-ថ',meaning:'ន / good and gentle; kind virtue; righteous'},
+      {kh:'ស',en:'SOTIDA',read:'ស-ត-ត',meaning:'ន / always pure; consistently virtuous; moral'},
+      {kh:'ស',en:'SREYLEAK2',read:'ស-រ-ល',meaning:'ន / lovely girl; beautiful maiden; graceful'},
+      {kh:'ស',en:'SREYNEANG',read:'ស-រ-ន-ង',meaning:'ន / fortunate girl; lucky woman; blessed'},
+      {kh:'ស',en:'SREYRATH',read:'ស-រ-រ-ថ',meaning:'ន / royal girl; noble maiden; dignified'},
+      {kh:'ស',en:'SREYROS',read:'ស-រ-រ-ស',meaning:'ន / beautiful girl; lovely blossom; flower'},
+      {kh:'ស',en:'SREYNEARY',read:'ស-រ-ន-រ',meaning:'ន / patriotic beauty; girl of the nation'},
+      {kh:'ស',en:'SREYPHORS',read:'ស-រ-ភ-ស',meaning:'ន / beautiful radiant girl; bright maiden'},
+      {kh:'ស',en:'SREYMONY',read:'ស-រ-ម-ន',meaning:'ន / girl of jewel; precious gem girl'},
+      {kh:'ស',en:'SREYTOUCH',read:'ស-រ-ត-ច',meaning:'ន / petite girl; small and lovely; dainty'},
+      {kh:'ស',en:'SOKVANNY',read:'ស-វ-ន',meaning:'ន / golden girl; precious golden one'},
+  ],
+  'ហ':[
+      {kh:'ហូរ',en:'HORA',read:'ហ-ូ-រ',meaning:'ន / astrology; auspicious timing; celestial'},
+      {kh:'ហង',en:'HANG',read:'ហ-ង',meaning:'ន / swan; noble; graceful beauty; elegant'},
+      {kh:'ហ៊ែង',en:'HENG',read:'ហ-ង',meaning:'ន / prosperous; flourishing; thriving; rich'},
+      {kh:'ហ៊ាន',en:'HAN',read:'ហ-ន',meaning:'ន / strong; capable; determined; resolute'},
+      {kh:'ហ',en:'HORA2',read:'ហ-ូ-រ',meaning:'ន / divine timing; celestial science; cosmic'},
+      {kh:'ហ',en:'HEAP',read:'ហ-ប',meaning:'ន / dress; cloth; fine garment; elegant wear'},
+      {kh:'ហ',en:'HEANG',read:'ហ-ង',meaning:'ន / precious; rare; extraordinary; special'},
+      {kh:'ហ',en:'HIN',read:'ហ-ន',meaning:'ន / gentle; kind; tender-hearted; caring'},
+      {kh:'ហ',en:'HOEUN',read:'ហ-ើ-ន',meaning:'ន / reason; motive; good cause; purpose'},
+      {kh:'ហ',en:'HONG',read:'ហ-ង',meaning:'ន / swan; royal bird; grace; elegant'},
+      {kh:'ហ',en:'HORA3',read:'ហ-ូ-រ',meaning:'ន / astrology chart; celestial guide; cosmic'},
+      {kh:'ហ',en:'HORNG',read:'ហ-ង',meaning:'ន / swan in flight; free spirit; graceful'},
+  ],
+  'ឡ':[
+      {kh:'ឡា',en:'LA',read:'ឡ',meaning:'ន / letter Ll; resonant sound; resonance'},
+      {kh:'ឡ',en:'LACH',read:'ឡ-ច',meaning:'ន / to exceed; surpass; excel; go beyond'},
+  ],
+  'អ':[
+      {kh:'អប្សរា',en:'APSARA',read:'អ-ប-ស-រ',meaning:'ន / apsara dancer; heavenly beauty; celestial art'},
+      {kh:'អម',en:'AMARA',read:'អ-ម-រ',meaning:'ន / immortal; eternal; undying grace; forever'},
+      {kh:'អរ',en:'ARANH',read:'អ-រ-ណ',meaning:'ន / peaceful; calm forest; serene; tranquil'},
+      {kh:'អណោ',en:'ANONG',read:'អ-ណ-ង',meaning:'ន / beautiful body; graceful form; elegance'},
+      {kh:'អង',en:'ANGO',read:'អ-ង',meaning:'ន / limb; body; noble part; essence; core'},
+      {kh:'អប',en:'APSAR',read:'អ-ប-ស-រ',meaning:'ន / celestial nymph; apsara; heavenly dancer'},
+      {kh:'អ',en:'AMRIN',read:'អ-ំ-រ-ន',meaning:'ន / kingly nectar; royal sweetness; divine'},
+      {kh:'អ',en:'ANACHAK',read:'អ-ន-ច-ក',meaning:'ន / kingdom; empire; realm of great power'},
+      {kh:'អ',en:'ANAKOT',read:'អ-ន-ក-ត',meaning:'ន / future; what is to come; bright destiny'},
+      {kh:'អ',en:'ANITH',read:'អ-ន-ថ',meaning:'ន / ever-present; always here; constant'},
+      {kh:'អ',en:'AREAK',read:'អ-រ-ក',meaning:'ន / civilization; culture; refinement; art'},
+      {kh:'អ',en:'ARIS',read:'អ-រ-ស',meaning:'ន / noble; pure; excellent; distinguished'},
+      {kh:'អ',en:'ARUN',read:'អ-រ-ន',meaning:'ន / dawn; morning sun; new beginning; hope'},
+      {kh:'អ',en:'ARUNA',read:'អ-រ-ន',meaning:'ន / the sun god; golden dawn; solar light'},
+      {kh:'អ',en:'ATITH',read:'អ-ត-ថ',meaning:'ន / past; history; ancestry; roots; lineage'},
+      {kh:'អ',en:'ATTA',read:'អ-ត-ត',meaning:'ន / self; soul; inner being; essence; core'},
+      {kh:'អ',en:'ATTHAREACH',read:'អ-ថ-រ-ជ',meaning:'ន / sovereign; independent ruler; free king'},
+      {kh:'អ',en:'ARUNH',read:'អ-រ-ន',meaning:'ន / dawn light; first ray of sun; hope rises'},
+      {kh:'អ',en:'AMARA2',read:'អ-ម-រ',meaning:'ន / immortal beauty; undying grace; eternal'},
+  ],
+}
+
+// ═══════════════════════════════════════════
+// CONFIRM LOGIC
+// ═══════════════════════════════════════════
+function getDayIdx(){
+  const raw=Math.round(-outerRot/CA);
+  return((raw%N)+N)%N;
+}
+
+let selNames=[];
+
+document.getElementById('confirm-btn').addEventListener('click',()=>{
+  const dayIdx=getDayIdx();
+  const ring2=[
+    'ចន្ទ','អង្គារ','ពុធ(ថ្ងៃ)','សៅរ៍','ព្រហស្បតិ៍','រាហូ','សុក្រ','អាទិត្យ'
+  ];
+  const dayKh=ring2[dayIdx];
+  const isSunday=(dayIdx===7);
+
+  // BLOCKED: letter group one step CCW from day (the cell immediately to the LEFT of day at top)
+  // = letter group index (dayIdx - 1 + N) % N
+  const blockedIdx=((dayIdx-1)+N)%N;
+
+  // Build zone assignments
+  // For each fortune zone position p (0..7):
+  //   letter group index = (dayIdx + p) % N
+  const zoneAssign=[];
+  for(let p=0;p<N;p++){
+    const lgIdx=(dayIdx+p)%N;
+    zoneAssign.push({
+      lg:LG[lgIdx],
+      zone:ZONE_NAMES[p],
+      ztype:ZONE_TYPE[p],
+      isBlocked:lgIdx===blockedIdx&&!isSunday,
+    });
+  }
+
+  // Fortune summary
+  const fs=document.getElementById('fortune-summary');
+  fs.className='fortune-summary show';
+  const good=zoneAssign.filter(z=>z.ztype==='good'&&!z.isBlocked);
+  const neutral=zoneAssign.filter(z=>z.ztype==='neutral'&&!z.isBlocked);
+  const blocked=zoneAssign.filter(z=>z.isBlocked);
+  const sunOk=isSunday?zoneAssign.filter(z=>z.ztype==='bad'):[];
+  fs.innerHTML=
+    '<div class="fday-label">'+dayKh+(isSunday?' (Sunday)':'')+'</div>'+
+    good.map(z=>'<div class="frow"><span class="fdot d-good"></span><span>ល: '+z.lg.label+' → '+z.zone+'</span></div>').join('')+
+    neutral.map(z=>'<div class="frow"><span class="fdot d-neutral"></span><span>មធ្យម: '+z.lg.label+' → '+z.zone+'</span></div>').join('')+
+    blocked.map(z=>'<div class="frow"><span class="fdot d-bad"></span><span>ហ: '+z.lg.label+' → '+z.zone+'</span></div>').join('')+
+    sunOk.map(z=>'<div class="frow"><span class="fdot d-bad"></span><span>OK(អាទិត្យ): '+z.lg.label+' → '+z.zone+'</span></div>').join('');
+
+  // Blocked notice
+  const bn=document.getElementById('blocked-notice');
+  const blockedGroups=zoneAssign.filter(z=>z.isBlocked);
+  if(blockedGroups.length){
+    bn.className='blocked-notice show';
+    bn.textContent='ហ: '+blockedGroups.map(b=>b.lg.label).join(', ')+
+      ' → '+blockedGroups[0].zone+
+      ' — ជួរនេះចួយជ្រើសចំពោះ'+dayKh+' (ជ្រើសសម្រាប់ថ្ងៃអាទិត្យប៉ុណ្ណោះ)';
+  } else {
+    bn.className='blocked-notice';
+  }
+
+  // Show results
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('name-results').style.display='block';
+  document.getElementById('results-title').textContent='ឈ្មោះ − '+dayKh;
+
+  // Build tabs
+  const tabs=document.getElementById('letter-tabs');
+  tabs.innerHTML='';
+  let firstAllowed=null;
+
+  zoneAssign.forEach((z,i)=>{
+    const btn=document.createElement('button');
+    const isBadSun=z.ztype==='bad'&&isSunday;
+    if(z.isBlocked){
+      btn.className='ltab blocked';
+    } else if(isBadSun){
+      btn.className='ltab sunday-ok'+(i===0?' active':'');
+    } else {
+      btn.className='ltab'+(firstAllowed===null?' active':'');
+    }
+    btn.innerHTML=z.lg.key+'<span class="tab-zone">'+z.zone+'</span>';
+    btn.title=z.lg.label+' · '+z.zone+(z.isBlocked?' · BLOCKED':'');
+    if(!z.isBlocked){
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.ltab').forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+        renderNames(z.lg.key);
+      });
+      if(firstAllowed===null) firstAllowed=z.lg.key;
+    }
+    tabs.appendChild(btn);
+  });
+
+  if(firstAllowed) renderNames(firstAllowed);
+});
+
+function renderNames(key){
+  const list=document.getElementById('names-list');
+  list.innerHTML='';
+  const names=NAMES[key]||[];
+  if(!names.length){
+    list.innerHTML='<div style="padding:14px;color:#bbb;font-size:13px;font-family:\'Noto Sans Khmer\',sans-serif;text-align:center">មិនទានមាន · No names listed yet</div>';
+    return;
+  }
+  names.forEach(n=>{
+    const row=document.createElement('div');
+    row.className='name-row'+(selNames.find(x=>x.kh===n.kh)?' selected':'');
+    row.setAttribute('data-tip',n.meaning);
+    const isSelected=!!selNames.find(x=>x.kh===n.kh);
+    row.innerHTML=
+      '<span class="nr-kh">'+n.kh+'</span>'+
+      '<span class="nr-en">'+n.en+'</span>'+
+      '<span class="nr-read">(អានថាៈ '+n.read+')</span>'+
+      '<span class="nr-tip-icon" title="'+n.meaning.replace(/\n/g,' · ')+'">ℹ</span>'+
+      '<span class="nr-sel">'+(isSelected?'✓':'+')+'</span>';
+    row.addEventListener('click',()=>{
+      const idx=selNames.findIndex(x=>x.kh===n.kh);
+      if(idx>=0){
+        selNames.splice(idx,1);
+        row.classList.remove('selected');
+        row.querySelector('.nr-sel').textContent='+';
+      } else {
+        selNames.push(n);
+        row.classList.add('selected');
+        row.querySelector('.nr-sel').textContent='✓';
+      }
+      updateCombiner();
+    });
+    list.appendChild(row);
+  });
+}
+
+function updateCombiner(){
+  const chips=document.getElementById('sel-chips');
+  chips.innerHTML='';
+  selNames.forEach(n=>{
+    const c=document.createElement('div');c.className='chip';
+    c.innerHTML='<span style="font-family:\'Noto Sans Khmer\',sans-serif">'+n.kh+'</span><span class="chip-rm" title="Remove">×</span>';
+    c.querySelector('.chip-rm').addEventListener('click',()=>{
+      selNames=selNames.filter(x=>x.kh!==n.kh);
+      document.querySelectorAll('.name-row').forEach(r=>{
+        if(r.querySelector('.nr-kh').textContent===n.kh){r.classList.remove('selected');r.querySelector('.nr-sel').textContent='+';}
+      });
+      updateCombiner();
+    });
+    chips.appendChild(c);
+  });
+  document.getElementById('res-kh').textContent=selNames.map(x=>x.kh).join('')||'—';
+  document.getElementById('res-en').textContent=selNames.map(x=>x.en).join(' ');
+}
+
+document.getElementById('clear-btn').addEventListener('click',()=>{
+  selNames=[];
+  document.querySelectorAll('.name-row.selected').forEach(r=>{r.classList.remove('selected');r.querySelector('.nr-sel').textContent='+';});
+  updateCombiner();
+});
+document.getElementById('swap-btn').addEventListener('click',()=>{selNames.reverse();updateCombiner();});
+document.getElementById('copy-btn').addEventListener('click',()=>{
+  const kh=document.getElementById('res-kh').textContent;
+  if(kh&&kh!=='—')navigator.clipboard.writeText(kh).then(()=>{
+    const b=document.getElementById('copy-btn');const o=b.textContent;b.textContent='✓ Copied';
+    setTimeout(()=>b.textContent=o,1600);
+  });
+});
+
+document.fonts.load("12px 'Noto Sans Khmer'").then(render).catch(render);
+</script>
+
+<script>
+// ── Service Worker registration ──────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW registered:', r.scope))
+      .catch(e => console.warn('SW failed:', e));
+  });
+}
+
+// ── Install prompt (Add to Home Screen banner) ───
+let deferredPrompt = null;
+const installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if(installBtn) installBtn.style.display = 'flex';
+});
+
+if(installBtn){
+  installBtn.addEventListener('click', async () => {
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if(outcome === 'accepted') installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  if(installBtn) installBtn.style.display = 'none';
+  deferredPrompt = null;
+});
+</script>
+</body>
+</html>
