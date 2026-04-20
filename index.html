@@ -2,10 +2,9 @@
 <html lang="km">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>ស្វែងរកឈ្មោះខ្មែរ</title>
 <meta name="application-name" content="ឈ្មោះខ្មែរ">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ឈ្មោះខ្មែរ">
 <meta name="description" content="Khmer astrological name finder — ដំរាដាក់ជ្មួរ">
@@ -19,43 +18,53 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* iOS Khmer font fallback — loads instantly with system fonts while Google Fonts fetches */
+@font-face {
+  font-family: 'Noto Sans Khmer';
+  src: local('Khmer Sangam MN'), local('Khmer MN');
+  unicode-range: U+1780-17FF, U+19E0-19FF, U+200B-200D, U+25CC;
+  font-weight: 100 900;
+  font-display: swap;
+}
+</style>
+<style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#faf8f3;color:#2d2a1e;min-height:100vh}
 .app{max-width:1180px;margin:0 auto;padding:20px 16px}
-h1{font-family:'Noto Sans Khmer',sans-serif;font-size:22px;font-weight:600;text-align:center;color:#4a3728;margin-bottom:4px}
+h1{font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:22px;font-weight:600;text-align:center;color:#4a3728;margin-bottom:4px}
 .subtitle{text-align:center;font-size:13px;color:#888;margin-bottom:20px}
 .main-grid{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
 @media(max-width:720px){.main-grid{grid-template-columns:1fr}}
 
 /* Wheel panel */
 .wheel-panel{background:#fff;border-radius:16px;border:0.5px solid #e0ddd5;padding:16px;text-align:center;position:sticky;top:16px}
-.wpanel-title{font-family:'Noto Sans Khmer',sans-serif;font-size:13px;color:#5a4530;margin-bottom:10px}
+.wpanel-title{font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:13px;color:#5a4530;margin-bottom:10px}
 #wheel-wrap{position:relative;width:268px;height:268px;margin:0 auto 10px}
-#cv{position:absolute;top:0;left:0;cursor:grab}
+#cv{position:absolute;top:0;left:0;cursor:grab;touch-action:pan-x pan-y}
 #cv.dragging{cursor:grabbing}
 #svg-ol{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
 .wheel-hint{font-size:11px;color:#aaa;margin-bottom:8px}
 .day-buttons{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:10px}
-.day-btn{padding:3px 9px;border:0.5px solid #d0ccc0;border-radius:20px;background:#faf8f3;color:#5a4530;cursor:pointer;font-size:11px;font-family:'Noto Sans Khmer',sans-serif;transition:all .12s}
+.day-btn{padding:3px 9px;border:0.5px solid #d0ccc0;border-radius:20px;background:#faf8f3;color:#5a4530;cursor:pointer;font-size:11px;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;transition:all .12s}
 .day-btn:hover{background:#f0ebe0}
 .day-btn.active{background:#4a3728;color:#fff;border-color:#4a3728}
-.confirm-btn{width:100%;padding:9px;background:#4a7c59;color:#fff;border:none;border-radius:10px;font-size:13px;font-family:'Noto Sans Khmer',sans-serif;cursor:pointer;margin-bottom:8px;transition:background .2s}
+.confirm-btn{width:100%;padding:9px;background:#4a7c59;color:#fff;border:none;border-radius:10px;font-size:13px;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;cursor:pointer;margin-bottom:8px;transition:background .2s}
 .confirm-btn:hover{background:#3d6649}
 .fortune-summary{padding:8px 10px;background:#faf8f3;border-radius:8px;display:none;text-align:left;margin-top:2px}
 .fortune-summary.show{display:block}
-.fday-label{font-weight:600;font-family:'Noto Sans Khmer',sans-serif;font-size:12px;margin-bottom:5px;color:#4a3728}
-.frow{display:flex;align-items:flex-start;gap:5px;margin-bottom:3px;font-family:'Noto Sans Khmer',sans-serif;font-size:10.5px}
+.fday-label{font-weight:600;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:12px;margin-bottom:5px;color:#4a3728}
+.frow{display:flex;align-items:flex-start;gap:5px;margin-bottom:3px;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:10.5px}
 .fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
 .d-good{background:#4a7c59}.d-bad{background:#c0392b}.d-neutral{background:#bbb}
 
 /* Results panel */
 .results-panel{background:#fff;border-radius:16px;border:0.5px solid #e0ddd5;padding:20px}
-.results-title{font-family:'Noto Sans Khmer',sans-serif;font-size:15px;color:#4a3728;margin-bottom:3px}
+.results-title{font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:15px;color:#4a3728;margin-bottom:3px}
 .results-hint{font-size:11px;color:#aaa;margin-bottom:12px}
 
 /* Letter tabs */
 .letter-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
-.ltab{padding:5px 11px;border:0.5px solid #d5d0c5;border-radius:20px;background:#faf8f3;color:#4a3728;cursor:pointer;font-size:13px;font-family:'Noto Sans Khmer',sans-serif;transition:all .12s;text-align:center;line-height:1.2}
+.ltab{padding:5px 11px;border:0.5px solid #d5d0c5;border-radius:20px;background:#faf8f3;color:#4a3728;cursor:pointer;font-size:13px;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;transition:all .12s;text-align:center;line-height:1.2}
 .ltab:hover{background:#ede8dc}
 .ltab.active{background:#4a3728;color:#fff;border-color:#4a3728}
 .ltab.blocked{color:#c0392b;border-color:#f0b8b4;background:#fff5f5;opacity:.55;cursor:not-allowed;text-decoration:line-through}
@@ -70,9 +79,9 @@ h1{font-family:'Noto Sans Khmer',sans-serif;font-size:22px;font-weight:600;text-
 .name-row:hover{background:#f5f2e8}
 .name-row:hover .nr-tip-icon{opacity:1}
 .name-row.selected{background:#e8f4ed}
-.nr-kh{font-family:'Noto Sans Khmer',sans-serif;font-size:15px;font-weight:500;color:#1a1812;min-width:110px;flex-shrink:0}
+.nr-kh{font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:15px;font-weight:500;color:#1a1812;min-width:110px;flex-shrink:0}
 .nr-en{font-size:11.5px;color:#999;flex-shrink:0}
-.nr-read{font-family:'Noto Sans Khmer',sans-serif;font-size:11px;color:#b0a890;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nr-read{font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:11px;color:#b0a890;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nr-tip-icon{font-size:12px;color:#bbb;opacity:0;transition:opacity .1s;flex-shrink:0;margin-left:2px;cursor:help}
 .nr-sel{width:20px;height:20px;border-radius:50%;border:1.5px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .1s;margin-left:4px}
 .name-row.selected .nr-sel{background:#4a7c59;border-color:#4a7c59;color:#fff}
@@ -82,7 +91,7 @@ h1{font-family:'Noto Sans Khmer',sans-serif;font-size:22px;font-weight:600;text-
   content:attr(data-tip);
   position:absolute;left:8px;top:calc(100% + 5px);z-index:200;
   background:#2d2a1e;color:#f0ece0;
-  font-size:11px;font-family:'Noto Sans Khmer',sans-serif;
+  font-size:11px;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;
   padding:6px 10px;border-radius:7px;
   white-space:pre-wrap;max-width:300px;line-height:1.6;
   pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,.25);
@@ -94,18 +103,18 @@ h1{font-family:'Noto Sans Khmer',sans-serif;font-size:22px;font-weight:600;text-
 
 .empty-state{text-align:center;padding:40px 20px;color:#ccc;font-size:13px}
 .empty-icon{font-size:36px;margin-bottom:10px}
-.blocked-notice{background:#fff5f5;border:0.5px solid #f0b8b4;border-radius:8px;padding:8px 12px;font-family:'Noto Sans Khmer',sans-serif;font-size:11px;color:#c0392b;margin-bottom:10px;line-height:1.6;display:none}
+.blocked-notice{background:#fff5f5;border:0.5px solid #f0b8b4;border-radius:8px;padding:8px 12px;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:11px;color:#c0392b;margin-bottom:10px;line-height:1.6;display:none}
 .blocked-notice.show{display:block}
 
 /* Combiner */
 .combiner{background:#f5f2ea;border-radius:12px;padding:14px;margin-top:4px}
-.combiner-title{font-family:'Noto Sans Khmer',sans-serif;font-size:13px;color:#4a3728;margin-bottom:10px;font-weight:500}
+.combiner-title{font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:13px;color:#4a3728;margin-bottom:10px;font-weight:500}
 .sel-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:30px;margin-bottom:10px}
-.chip{display:flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #c8c0b0;border-radius:20px;font-family:'Noto Sans Khmer',sans-serif;font-size:13px}
+.chip{display:flex;align-items:center;gap:4px;padding:4px 10px;background:#fff;border:0.5px solid #c8c0b0;border-radius:20px;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:13px}
 .chip-rm{cursor:pointer;color:#bbb;font-size:13px;line-height:1}
 .chip-rm:hover{color:#c0392b}
 .result-box{display:flex;align-items:baseline;gap:12px;padding:12px 16px;background:#fff;border-radius:10px;border:0.5px solid #d5d0c5;flex-wrap:wrap}
-.res-kh{font-family:'Noto Sans Khmer',sans-serif;font-size:26px;font-weight:600;color:#1a1812;letter-spacing:1px}
+.res-kh{font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif;font-size:26px;font-weight:600;color:#1a1812;letter-spacing:1px}
 .res-en{font-size:14px;color:#999}
 .comb-actions{display:flex;gap:7px;margin-top:10px}
 .act-btn{padding:6px 13px;border:0.5px solid #c8c0b0;border-radius:8px;background:#fff;color:#4a3728;cursor:pointer;font-size:12px;transition:background .12s}
@@ -119,7 +128,7 @@ h1{font-family:'Noto Sans Khmer',sans-serif;font-size:22px;font-weight:600;text-
   <h1>ស្វែងរកឈ្មោះ</h1>
   
 <div id="pwa-bar" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-  <button id="install-btn" style="display:none;align-items:center;gap:7px;padding:7px 16px;background:#4a3728;color:#fff;border:none;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Sans Khmer',sans-serif">
+  <button id="install-btn" style="display:none;align-items:center;gap:7px;padding:7px 16px;background:#4a3728;color:#fff;border:none;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif">
     <span style="font-size:16px">📲</span>
     <span>ដំឡើងកម្មវិធី · Install App</span>
   </button>
@@ -250,7 +259,7 @@ function updateSVG(){
         const r=rSt+li*lG,pid='a'+ri+'-'+i+'-'+li;
         arcPath(pid,r,isBot?ea:sa,isBot?sa:ea,!isBot);
         const tEl=document.createElementNS(NS,'text');
-        tEl.setAttribute('font-family',"'Noto Sans Khmer',sans-serif");
+        tEl.setAttribute('font-family',"'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif");
         tEl.setAttribute('font-size',fs+'px');
         tEl.setAttribute('fill',TC);
         const tp=document.createElementNS(NS,'textPath');
@@ -266,7 +275,7 @@ function updateSVG(){
   const ct=document.createElementNS(NS,'text');
   ct.setAttribute('x',CX);ct.setAttribute('y',CY);
   ct.setAttribute('text-anchor','middle');ct.setAttribute('dominant-baseline','middle');
-  ct.setAttribute('font-family',"'Noto Sans Khmer',sans-serif");
+  ct.setAttribute('font-family',"'Noto Sans Khmer','Khmer Sangam MN','Khmer MN',sans-serif");
   ct.setAttribute('font-size','6px');ct.setAttribute('fill',TC);
   ct.textContent='តម្រា';svgLayer.appendChild(ct);
 }
@@ -999,7 +1008,13 @@ document.getElementById('copy-btn').addEventListener('click',()=>{
   });
 });
 
-document.fonts.load("12px 'Noto Sans Khmer'").then(render).catch(render);
+// Load font then render — works even if Google Fonts unavailable (iOS offline)
+function doRender() { render(); }
+if (document.fonts && document.fonts.load) {
+  document.fonts.load("12px 'Noto Sans Khmer'").then(doRender).catch(doRender);
+} else {
+  doRender();
+}
 </script>
 
 <script>
